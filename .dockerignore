@@ -1,0 +1,50 @@
+# Docker ignore file for PicoClaw
+# Reduces build context size and speeds up docker build
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+testdata/
+
+# Documentation
+*.md
+!README.md
+docs/
+assets/
+.github/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local config
+config.json
+*.env
+.env*
+
+# Workspace (runtime data)
+workspace/
+.picoclaw/
+
+# Build cache
+.cache/
+tmp/
