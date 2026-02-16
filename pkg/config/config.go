@@ -104,8 +104,9 @@ type ProviderConfig struct {
 }
 
 type GatewayConfig struct {
-	Host string `json:"host" env:"PICOCLAW_GATEWAY_HOST"`
-	Port int    `json:"port" env:"PICOCLAW_GATEWAY_PORT"`
+	Host       string `json:"host" env:"PICOCLAW_GATEWAY_HOST"`
+	Port       int    `json:"port" env:"PICOCLAW_GATEWAY_PORT"`
+	HealthPort int    `json:"health_port" env:"PICOCLAW_GATEWAY_HEALTH_PORT"`
 }
 
 type WebSearchConfig struct {
@@ -185,8 +186,9 @@ func DefaultConfig() *Config {
 			Gemini:     ProviderConfig{},
 		},
 		Gateway: GatewayConfig{
-			Host: "0.0.0.0",
-			Port: 18790,
+			Host:       "0.0.0.0",
+			Port:       18790,
+			HealthPort: 9090,
 		},
 		Tools: ToolsConfig{
 			Web: WebToolsConfig{

@@ -23,6 +23,7 @@ import (
 	"github.com/sipeed/picoclaw/pkg/channels"
 	"github.com/sipeed/picoclaw/pkg/config"
 	"github.com/sipeed/picoclaw/pkg/cron"
+	"github.com/sipeed/picoclaw/pkg/health"
 	"github.com/sipeed/picoclaw/pkg/heartbeat"
 	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/providers"
@@ -594,6 +595,20 @@ func gatewayCmd() {
 	} else {
 		fmt.Println("⚠ Warning: No channels enabled")
 	}
+
+	// Start health check server
+	healthServer := health.NewServer(health.Config{
+		Port:      cfg.Gateway.HealthPort,
+		Version:   version,
+		BuildTime: "unknown", // Can be set via ldflags
+		AgentName: "picclaw",
+	})
+	go func() {
+		if err := healthServer.Start(); err != nil {
+			fmt.Printf("Error starting health server: %v\n", err)
+		}
+	}()
+	fmt.Printf("✓ Health check endpoint: http://%s:%d/healthz\n", cfg.Gateway.Host, cfg.Gateway.HealthPort)
 
 	fmt.Printf("✓ Gateway started on %s:%d\n", cfg.Gateway.Host, cfg.Gateway.Port)
 	fmt.Println("Press Ctrl+C to stop")
