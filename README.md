@@ -59,7 +59,51 @@
 | **Cost** | Mac Mini 599$ | Most Linux SBC </br>~50$ |**Any Linux Board**</br>**As low as 10$** |
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
 
+---
 
+## 🏗 Architecture
+
+PicoClaw is designed around a lightweight, event-driven architecture:
+
+```mermaid
+flowchart TD
+
+    User -->|Message| Channels
+    Channels --> MessageBus
+    MessageBus --> AgentLoop
+    AgentLoop --> ToolRegistry
+    AgentLoop --> SkillSystem
+    ToolRegistry --> Tools
+    SkillSystem --> Skills
+    AgentLoop -->|Response| MessageBus
+    MessageBus --> Channels
+    Channels --> User
+
+    subgraph Channels
+        Telegram
+        Discord
+        QQ
+        DingTalk
+    end
+
+    subgraph Core
+        MessageBus["Message Bus"]
+        AgentLoop["Agent Loop"]
+        ToolRegistry["Tool Registry"]
+        SkillSystem["Skill System"]
+    end
+
+    subgraph Tools
+        WebSearch
+        Cron
+        FileSystem
+    end
+
+    subgraph Skills
+        CustomSkills
+    end
+
+```
 ## 🦾 Demonstration
 ### 🛠️ Standard Assistant Workflows
 <table align="center">
