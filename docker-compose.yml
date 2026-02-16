@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  picoclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: picoclaw:latest
+    container_name: picoclaw
+    restart: unless-stopped
+    
+    # Port mapping (host:container)
+    ports:
+      - "8080:8080"
+    
+    # Environment variables
+    environment:
+      - PICOCLAW_PORT=8080
+      - PICOCLAW_HOME=/app
+      - PICOCLAW_WORKSPACE=/app/workspace
+    
+    # Mount workspace for persistence
+    volumes:
+      - ./workspace:/app/workspace
+      - ./config.docker.json:/app/config/config.json:ro
+      - ./skills:/app/skills:ro
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 16M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp
+    
+    # Network mode
+    networks:
+      - picoclaw-net
+
+networks:
+  picoclaw-net:
+    driver: bridge
