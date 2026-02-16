@@ -1,0 +1,28 @@
+{
+  "agent": {
+    "name": "picoclaw-docker",
+    "type": "picoclaw",
+    "version": "docker"
+  },
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "telegram": {
+    "enabled": false,
+    "bot_token": ""
+  },
+  "discord": {
+    "enabled": false,
+    "bot_token": ""
+  },
+  "storage": {
+    "workspace_dir": "/app/workspace",
+    "skills_dir": "/app/skills"
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "output": "stdout"
+  }
+}

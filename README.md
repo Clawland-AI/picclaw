@@ -111,6 +111,158 @@ make build
 # Build for multiple platforms
 make build-all
 
+### 🐳 Docker Deployment
+
+Run PicoClaw in a containerized environment with Docker.
+
+#### Quick Start with Docker
+
+**1. Pull pre-built image** (coming soon)
+
+```bash
+docker pull ghcr.io/sipeed/picoclaw:latest
+```
+
+**2. Or build locally**
+
+```bash
+git clone https://github.com/sipeed/picoclaw.git
+cd picoclaw
+
+# Build image
+docker build -t picoclaw:latest .
+```
+
+**3. Run container**
+
+```bash
+# Create workspace directory
+mkdir -p workspace
+
+# Copy and edit config
+cp config.example.json config.docker.json
+# Edit config.docker.json with your API keys
+
+# Run container
+docker run -d \
+  --name picoclaw \
+  -p 8080:8080 \
+  -v $(pwd)/workspace:/app/workspace \
+  -v $(pwd)/config.docker.json:/app/config/config.json:ro \
+  picoclaw:latest
+```
+
+**4. Check logs**
+
+```bash
+docker logs -f picoclaw
+```
+
+**5. Access shell**
+
+```bash
+docker exec -it picoclaw sh
+```
+
+#### Docker Compose (Recommended)
+
+**1. Create docker-compose.yml** (already included in repo)
+
+```yaml
+version: '3.8'
+
+services:
+  picoclaw:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./workspace:/app/workspace
+      - ./config.docker.json:/app/config/config.json:ro
+    environment:
+      - PICOCLAW_PORT=8080
+    restart: unless-stopped
+```
+
+**2. Start services**
+
+```bash
+# Start in background
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+#### Configuration
+
+Mount your config file at `/app/config/config.json`:
+
+```json
+{
+  "agent": {
+    "name": "picoclaw-docker",
+    "type": "picoclaw",
+    "version": "docker"
+  },
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "telegram": {
+    "enabled": true,
+    "bot_token": "YOUR_TOKEN_HERE"
+  },
+  "storage": {
+    "workspace_dir": "/app/workspace",
+    "skills_dir": "/app/skills"
+  }
+}
+```
+
+#### Features
+
+✅ **Multi-stage build** - Optimized image size (<15MB)  
+✅ **Non-root user** - Runs as `picoclaw:picoclaw` (UID:GID 1000:1000)  
+✅ **Health checks** - Built-in `/healthz` endpoint monitoring  
+✅ **Persistent storage** - Workspace volume for data persistence  
+✅ **Resource limits** - CPU and memory constraints (128MB default)  
+✅ **Security hardening** - Read-only filesystem, no new privileges  
+
+#### Troubleshooting
+
+**Container exits immediately**
+
+```bash
+# Check logs
+docker logs picoclaw
+
+# Common issue: missing config file
+docker run --rm -v $(pwd)/config.docker.json:/app/config/config.json picoclaw:latest
+```
+
+**Port already in use**
+
+```bash
+# Use different port
+docker run -p 9090:8080 picoclaw:latest
+
+# Or find process using port 8080
+lsof -i :8080
+```
+
+**Permission denied on workspace**
+
+```bash
+# Fix ownership
+sudo chown -R 1000:1000 workspace/
+```
+
+---
+
 # Build And Install
 make install
 ```
