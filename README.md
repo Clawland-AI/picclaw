@@ -1,7 +1,7 @@
 <div align="center">
-<img src="assets/logo.jpg" alt="PicoClaw" width="512">
+<img src="assets/logo.jpg" alt="PicClaw" width="512">
 
-<h1>PicoClaw</h1>
+<h1>PicClaw</h1>
 
 <h3>Self-Evolving Edge AI Agent in Go</h3>
 
@@ -410,10 +410,6 @@ make test       # Run all tests
 make lint       # Run golangci-lint
 make build-all  # Build for all platforms
 ```
-
-Discord: https://discord.gg/V4sAZ9XWpN
-
-<img src="assets/wechat.png" alt="WeChat" width="300">
 
 ## Troubleshooting
 
