@@ -352,8 +352,6 @@ PicoClaw runs on anything with Linux and a network connection:
 | Raspberry Pi Zero 2W | $15 | ARM64 | General purpose |
 | Any Linux x86/ARM server | - | x86/ARM | Cloud or on-prem |
 
-https://private-user-images.githubusercontent.com/83055338/547056448-e7b031ff-d6f5-4468-bcca-5726b6fecb5c.mp4
-
 ## Demonstrations
 
 <table align="center">
