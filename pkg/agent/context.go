@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sipeed/picoclaw/pkg/gene"
 	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/providers"
 	"github.com/sipeed/picoclaw/pkg/skills"
@@ -19,6 +20,7 @@ type ContextBuilder struct {
 	skillsLoader *skills.SkillsLoader
 	memory       *MemoryStore
 	tools        *tools.ToolRegistry // Direct reference to tool registry
+	geneEngine   *gene.Engine        // Gene Evolution engine (optional)
 }
 
 func getGlobalConfigDir() string {
@@ -46,6 +48,11 @@ func NewContextBuilder(workspace string) *ContextBuilder {
 // SetToolsRegistry sets the tools registry for dynamic tool summary generation.
 func (cb *ContextBuilder) SetToolsRegistry(registry *tools.ToolRegistry) {
 	cb.tools = registry
+}
+
+// SetGeneEngine sets the Gene Evolution engine for strategy context injection.
+func (cb *ContextBuilder) SetGeneEngine(engine *gene.Engine) {
+	cb.geneEngine = engine
 }
 
 func (cb *ContextBuilder) getIdentity() string {
@@ -132,6 +139,14 @@ The following skills extend your capabilities. To use a skill, read its SKILL.md
 	memoryContext := cb.memory.GetMemoryContext()
 	if memoryContext != "" {
 		parts = append(parts, "# Memory\n\n"+memoryContext)
+	}
+
+	// Gene Evolution context — inject matched strategies into system prompt
+	if cb.geneEngine != nil {
+		geneContext := cb.geneEngine.GetGeneContext()
+		if geneContext != "" {
+			parts = append(parts, "# Verified Strategies (Genes)\n\n"+geneContext)
+		}
 	}
 
 	// Join with "---" separator

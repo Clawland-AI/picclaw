@@ -24,3 +24,6 @@ coverage.html
 
 # Ralph workspace
 ralph/
+
+# Clawland org temp directories (contain embedded git repos)
+clawland-org/_tmp/

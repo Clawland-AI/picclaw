@@ -18,6 +18,7 @@ import (
 
 	"github.com/sipeed/picoclaw/pkg/bus"
 	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/sipeed/picoclaw/pkg/gene"
 	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/providers"
 	"github.com/sipeed/picoclaw/pkg/session"
@@ -37,6 +38,7 @@ type AgentLoop struct {
 	tools          *tools.ToolRegistry
 	running        bool
 	summarizing    sync.Map      // Tracks which sessions are currently being summarized
+	geneEngine     *gene.Engine  // Gene Evolution engine (optional)
 }
 
 // processOptions configures how a message is processed
@@ -143,6 +145,41 @@ func (al *AgentLoop) Stop() {
 
 func (al *AgentLoop) RegisterTool(tool tools.Tool) {
 	al.tools.Register(tool)
+}
+
+// SetGeneEngine sets the Gene Evolution engine for auto-solidify after tool actions.
+func (al *AgentLoop) SetGeneEngine(engine *gene.Engine) {
+	al.geneEngine = engine
+	al.contextBuilder.SetGeneEngine(engine)
+}
+
+// afterToolExecution evaluates whether to auto-solidify after a tool execution.
+// This is the Gene Evolution hook into the agent loop.
+func (al *AgentLoop) afterToolExecution(toolName string, result string, err error) {
+	if al.geneEngine == nil || err != nil {
+		return
+	}
+
+	// Extract signals from the tool result
+	signals := al.geneEngine.ExtractSignalsFromText(result)
+	if len(signals) == 0 {
+		return
+	}
+
+	// Determine outcome
+	outcomeStatus := "success"
+	if strings.Contains(strings.ToLower(result), "error") || strings.Contains(strings.ToLower(result), "failed") {
+		outcomeStatus = "partial"
+	}
+
+	// Build a brief strategy description from the tool call
+	strategy := []string{
+		fmt.Sprintf("Executed tool '%s'", toolName),
+	}
+
+	summary := fmt.Sprintf("Auto-detected signals from %s execution", toolName)
+
+	al.geneEngine.ConsiderSolidify(signals, strategy, summary, outcomeStatus, nil)
 }
 
 func (al *AgentLoop) ProcessDirect(ctx context.Context, content, sessionKey string) (string, error) {
@@ -412,6 +449,9 @@ func (al *AgentLoop) runLLMIteration(ctx context.Context, messages []providers.M
 			if err != nil {
 				result = fmt.Sprintf("Error: %v", err)
 			}
+
+			// Gene Evolution: consider auto-solidify after tool execution
+			al.afterToolExecution(tc.Name, result, err)
 
 			toolResultMsg := providers.Message{
 				Role:       "tool",

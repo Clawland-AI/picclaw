@@ -23,6 +23,7 @@ import (
 	"github.com/sipeed/picoclaw/pkg/channels"
 	"github.com/sipeed/picoclaw/pkg/config"
 	"github.com/sipeed/picoclaw/pkg/cron"
+	"github.com/sipeed/picoclaw/pkg/gene"
 	"github.com/sipeed/picoclaw/pkg/heartbeat"
 	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/providers"
@@ -398,6 +399,9 @@ func agentCmd() {
 	msgBus := bus.NewMessageBus()
 	agentLoop := agent.NewAgentLoop(cfg, msgBus, provider)
 
+	// Initialize Gene Evolution engine
+	setupGeneEngine(agentLoop, cfg.WorkspacePath())
+
 	// Print agent startup info (only for interactive mode)
 	startupInfo := agentLoop.GetStartupInfo()
 	logger.InfoCF("agent", "Agent initialized",
@@ -532,6 +536,9 @@ func gatewayCmd() {
 
 	msgBus := bus.NewMessageBus()
 	agentLoop := agent.NewAgentLoop(cfg, msgBus, provider)
+
+	// Initialize Gene Evolution engine
+	setupGeneEngine(agentLoop, cfg.WorkspacePath())
 
 	// Print agent startup info
 	fmt.Println("\n📦 Agent Status:")
@@ -707,6 +714,40 @@ func setupCronTool(agentLoop *agent.AgentLoop, msgBus *bus.MessageBus, workspace
 	})
 
 	return cronService
+}
+
+// setupGeneEngine initializes the Gene Evolution engine, seeds it with default
+// genes if empty, and registers the report_gene tool with the agent loop.
+func setupGeneEngine(agentLoop *agent.AgentLoop, workspace string) {
+	geneConfig := gene.DefaultGeneConfig()
+	engine, err := gene.NewEngine(workspace, geneConfig)
+	if err != nil {
+		logger.ErrorCF("gene", "Failed to initialize Gene Engine",
+			map[string]interface{}{"error": err.Error()})
+		fmt.Printf("⚠ Gene Engine failed to initialize: %v\n", err)
+		return
+	}
+
+	// Seed with default genes if store is empty
+	if err := engine.SeedIfEmpty(gene.DefaultSeedGenes()); err != nil {
+		logger.ErrorCF("gene", "Failed to seed genes",
+			map[string]interface{}{"error": err.Error()})
+	}
+
+	// Register report_gene tool
+	geneTool := tools.NewGeneTool(engine)
+	agentLoop.RegisterTool(geneTool)
+
+	// Connect engine to agent loop for auto-solidify and context injection
+	agentLoop.SetGeneEngine(engine)
+
+	stats := engine.GetStats()
+	logger.InfoCF("gene", "Gene Engine ready",
+		map[string]interface{}{
+			"genes":    stats["genes"],
+			"capsules": stats["capsules"],
+			"strategy": stats["strategy"],
+		})
 }
 
 func loadConfig() (*config.Config, error) {

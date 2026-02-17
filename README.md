@@ -7,7 +7,7 @@
 <h3></h3>
 
 <p>
-<img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
+<img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
 <img src="https://img.shields.io/badge/Arch-x86__64%2C%20ARM64%2C%20RISC--V-blue" alt="Hardware">
 <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
@@ -37,6 +37,10 @@
 </table>
 
 ## 📢 News
+2026-02-17 🧬 Gene Evolution Protocol (CGEP) — Agents now learn and reuse monitoring strategies. Self-evolving edge AI!
+
+2026-02-16 🏗️ PicoClaw joins [Clawland-AI](https://github.com/Clawland-AI) — Open-source edge AI Agent ecosystem with Build-to-Earn revenue sharing.
+
 2026-02-09 🎉 PicoClaw Launched! Built in 1 day to bring AI Agents to $10 hardware with <10MB RAM. 🦐 皮皮虾，我们走！
 
 ## ✨ Features
@@ -59,6 +63,38 @@
 | **Cost** | Mac Mini 599$ | Most Linux SBC </br>~50$ |**Any Linux Board**</br>**As low as 10$** |
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
 
+
+## 🧬 Gene Evolution (CGEP)
+
+PicoClaw includes a **Clawland Gene Evolution Protocol** — a self-evolving strategy system adapted from the [GEP protocol](https://github.com/autogame-17/evolver). Agents learn from experience and reuse proven monitoring strategies.
+
+**How it works:**
+- **Genes** encode reusable monitoring strategies (e.g. "cross-check temperature with adjacent rack sensors before alerting")
+- **Capsules** record what happened when a Gene was applied (outcome, sensor data, confidence)
+- The agent **auto-solidifies** experiences after tool execution — successful novel handling becomes a new Gene
+- Genes are **injected into the system prompt** so the LLM prefers verified strategies over ad-hoc reasoning
+
+**Seed Genes (6 built-in):**
+
+| Gene | Category | Scenario |
+|------|----------|----------|
+| `gene_sensor_repair_from_errors` | repair | generic |
+| `gene_threshold_optimize_from_history` | optimize | generic |
+| `gene_cross_sensor_innovate` | innovate | generic |
+| `gene_dc_temp_spike_crosscheck` | repair | datacenter |
+| `gene_pond_do_night_emergency` | repair | aquaculture |
+| `gene_greenhouse_ventilation_schedule` | optimize | greenhouse |
+
+**Strategy Presets:**
+
+| Preset | Min Confidence | Min Verified | Use Case |
+|--------|---------------|-------------|----------|
+| `conservative` | 90% | 5 nodes | Production / critical infrastructure |
+| `balanced` | 70% | 2 nodes | Default for most deployments |
+| `exploratory` | 30% | 0 | Development / testing new scenarios |
+| `repair-only` | 50% | 1 | Emergency mode after failures |
+
+The agent can also explicitly report experiences via the `report_gene` tool.
 
 ## 🦾 Demonstration
 ### 🛠️ Standard Assistant Workflows
@@ -339,7 +375,8 @@ PicoClaw stores data in your configured workspace (default: `~/.picoclaw/workspa
 
 ```
 ~/.picoclaw/workspace/
-├── sessions/          # Conversation sessions and history
+├── genes/            # Gene Evolution data (strategies, capsules, events)
+├── sessions/         # Conversation sessions and history
 ├── memory/           # Long-term memory (MEMORY.md)
 ├── cron/             # Scheduled jobs database
 ├── skills/           # Custom skills
@@ -485,6 +522,19 @@ Jobs are stored in `~/.picoclaw/workspace/cron/` and processed automatically.
 ## 🤝 Contribute & Roadmap
 
 PRs welcome! The codebase is intentionally small and readable. 🤗
+
+### Clawland Ecosystem
+
+PicoClaw is the **L1 edge agent** in the [Clawland-AI](https://github.com/Clawland-AI) ecosystem:
+
+| Layer | Repo | Role |
+|-------|------|------|
+| **L1 Edge** | **picclaw** (this repo) | Edge AI agent on $10 hardware |
+| **L2 Regional** | [nanoclaw](https://github.com/Clawland-AI/nanoclaw) | Regional gateway (Python) |
+| **L3 Cloud** | [moltclaw](https://github.com/Clawland-AI/moltclaw) | Cloud AI gateway (TypeScript) |
+| **L0 MCU** | [microclaw](https://github.com/Clawland-AI/microclaw) | Microcontroller agent (C/Rust) |
+
+**Build to Earn**: Contributors share 20% of net revenue through the [Contributor Revenue Pool](https://github.com/Clawland-AI). First 10 core contributors get a 0.5% lifetime bonus.
 
 discord:  https://discord.gg/V4sAZ9XWpN
 
