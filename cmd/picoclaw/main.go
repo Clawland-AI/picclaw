@@ -9,6 +9,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -23,6 +24,7 @@ import (
 	"github.com/sipeed/picoclaw/pkg/channels"
 	"github.com/sipeed/picoclaw/pkg/config"
 	"github.com/sipeed/picoclaw/pkg/cron"
+	"github.com/sipeed/picoclaw/pkg/edge"
 	"github.com/sipeed/picoclaw/pkg/gene"
 	"github.com/sipeed/picoclaw/pkg/heartbeat"
 	"github.com/sipeed/picoclaw/pkg/logger"
@@ -137,6 +139,8 @@ func main() {
 			fmt.Printf("Unknown skills command: %s\n", subcommand)
 			skillsHelp()
 		}
+	case "gene":
+		geneCmd()
 	case "version", "--version", "-v":
 		fmt.Printf("%s picoclaw v%s\n", logo, version)
 	default:
@@ -157,6 +161,7 @@ func printHelp() {
 	fmt.Println("  status      Show picoclaw status")
 	fmt.Println("  cron        Manage scheduled tasks")
 	fmt.Println("  skills      Manage skills (install, list, remove)")
+	fmt.Println("  gene        Manage gene evolution pool (list, stats, export)")
 	fmt.Println("  version     Show version information")
 }
 
@@ -400,7 +405,7 @@ func agentCmd() {
 	agentLoop := agent.NewAgentLoop(cfg, msgBus, provider)
 
 	// Initialize Gene Evolution engine
-	setupGeneEngine(agentLoop, cfg.WorkspacePath())
+	_ = setupGeneEngine(agentLoop, cfg.WorkspacePath(), &cfg.Gene)
 
 	// Print agent startup info (only for interactive mode)
 	startupInfo := agentLoop.GetStartupInfo()
@@ -538,7 +543,7 @@ func gatewayCmd() {
 	agentLoop := agent.NewAgentLoop(cfg, msgBus, provider)
 
 	// Initialize Gene Evolution engine
-	setupGeneEngine(agentLoop, cfg.WorkspacePath())
+	geneEngine := setupGeneEngine(agentLoop, cfg.WorkspacePath(), &cfg.Gene)
 
 	// Print agent startup info
 	fmt.Println("\n📦 Agent Status:")
@@ -567,6 +572,37 @@ func gatewayCmd() {
 		30*60,
 		true,
 	)
+
+	// Setup Edge API Server and Reporter if enabled
+	var edgeServer *edge.Server
+	var edgeReporter *edge.Reporter
+	if cfg.Edge.Enabled {
+		edgeCfg := edge.Config{
+			Enabled:  true,
+			Port:     cfg.Edge.Port,
+			NodeID:   cfg.Edge.NodeID,
+			NodeName: cfg.Edge.NodeName,
+			Cloud: edge.CloudConfig{
+				Endpoint:          cfg.Edge.CloudEndpoint,
+				HeartbeatInterval: time.Duration(cfg.Edge.HeartbeatSeconds) * time.Second,
+				Token:             cfg.Edge.CloudToken,
+			},
+		}
+		edgeServer = edge.NewServer(edgeCfg)
+		edgeReporter = edge.NewReporter(edgeCfg)
+
+		// Wire gene engine into edge reporter for heartbeat stats
+		if geneEngine != nil {
+			edgeReporter.SetGeneProvider(geneEngine)
+		}
+
+		logger.InfoCF("edge", "Edge server configured",
+			map[string]interface{}{
+				"port":    edgeCfg.Port,
+				"node_id": edgeCfg.NodeID,
+				"cloud":   edgeCfg.Cloud.Endpoint,
+			})
+	}
 
 	channelManager, err := channels.NewManager(cfg, msgBus)
 	if err != nil {
@@ -618,6 +654,20 @@ func gatewayCmd() {
 	}
 	fmt.Println("✓ Heartbeat service started")
 
+	// Start edge server and reporter
+	if edgeServer != nil {
+		go func() {
+			if err := edgeServer.Start(); err != nil {
+				logger.ErrorCF("edge", "Edge server error", map[string]interface{}{"error": err.Error()})
+			}
+		}()
+		fmt.Printf("✓ Edge API server started on :%d\n", cfg.Edge.Port)
+	}
+	if edgeReporter != nil {
+		go edgeReporter.StartHeartbeat()
+		fmt.Println("✓ Edge heartbeat reporter started")
+	}
+
 	if err := channelManager.StartAll(ctx); err != nil {
 		fmt.Printf("Error starting channels: %v\n", err)
 	}
@@ -630,6 +680,9 @@ func gatewayCmd() {
 
 	fmt.Println("\nShutting down...")
 	cancel()
+	if edgeReporter != nil {
+		edgeReporter.Stop()
+	}
 	heartbeatService.Stop()
 	cronService.Stop()
 	agentLoop.Stop()
@@ -718,14 +771,20 @@ func setupCronTool(agentLoop *agent.AgentLoop, msgBus *bus.MessageBus, workspace
 
 // setupGeneEngine initializes the Gene Evolution engine, seeds it with default
 // genes if empty, and registers the report_gene tool with the agent loop.
-func setupGeneEngine(agentLoop *agent.AgentLoop, workspace string) {
-	geneConfig := gene.DefaultGeneConfig()
+// Returns the engine so callers can wire it to the edge reporter.
+func setupGeneEngine(agentLoop *agent.AgentLoop, workspace string, geneCfg *config.GeneAppConfig) *gene.Engine {
+	geneConfig := gene.GeneConfig{
+		Strategy:      geneCfg.Strategy,
+		AutoPublish:   geneCfg.AutoPublish,
+		MinConfidence: geneCfg.MinConfidence,
+		MinVerifiedBy: geneCfg.MinVerifiedBy,
+	}
 	engine, err := gene.NewEngine(workspace, geneConfig)
 	if err != nil {
 		logger.ErrorCF("gene", "Failed to initialize Gene Engine",
 			map[string]interface{}{"error": err.Error()})
 		fmt.Printf("⚠ Gene Engine failed to initialize: %v\n", err)
-		return
+		return nil
 	}
 
 	// Seed with default genes if store is empty
@@ -748,6 +807,126 @@ func setupGeneEngine(agentLoop *agent.AgentLoop, workspace string) {
 			"capsules": stats["capsules"],
 			"strategy": stats["strategy"],
 		})
+
+	return engine
+}
+
+func geneCmd() {
+	if len(os.Args) < 3 {
+		geneHelp()
+		return
+	}
+
+	cfg, err := loadConfig()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
+	workspace := cfg.WorkspacePath()
+	geneConfig := gene.GeneConfig{
+		Strategy:      cfg.Gene.Strategy,
+		AutoPublish:   cfg.Gene.AutoPublish,
+		MinConfidence: cfg.Gene.MinConfidence,
+		MinVerifiedBy: cfg.Gene.MinVerifiedBy,
+	}
+	engine, err := gene.NewEngine(workspace, geneConfig)
+	if err != nil {
+		fmt.Printf("Error initializing gene engine: %v\n", err)
+		os.Exit(1)
+	}
+	_ = engine.SeedIfEmpty(gene.DefaultSeedGenes())
+
+	subcommand := os.Args[2]
+	switch subcommand {
+	case "list":
+		geneListCmd(engine)
+	case "stats":
+		geneStatsCmd(engine)
+	case "export":
+		geneExportCmd(engine)
+	default:
+		fmt.Printf("Unknown gene command: %s\n", subcommand)
+		geneHelp()
+	}
+}
+
+func geneHelp() {
+	fmt.Printf("%s picoclaw gene - Gene Evolution Pool Management\n\n", logo)
+	fmt.Println("Usage: picoclaw gene <command>")
+	fmt.Println()
+	fmt.Println("Commands:")
+	fmt.Println("  list    Show local genes with confidence scores")
+	fmt.Println("  stats   Show gene pool statistics and drift intensity")
+	fmt.Println("  export  Export genes as JSON for manual sharing")
+}
+
+func geneListCmd(engine *gene.Engine) {
+	stats := engine.GetStats()
+	geneCount := stats["genes"].(int)
+
+	if geneCount == 0 {
+		fmt.Println("No genes in the local pool. Run the gateway to seed default genes.")
+		return
+	}
+
+	fmt.Printf("\n%s Gene Pool (%d genes)\n\n", logo, geneCount)
+	fmt.Printf("%-40s %-12s %-12s %-10s %-8s\n", "ID", "Category", "Scenario", "Confidence", "Verified")
+	fmt.Println(strings.Repeat("-", 90))
+
+	allGenes := engine.GetHighConfidenceGenes(0, 0)
+	for _, g := range allGenes {
+		conf := g["confidence"].(float64)
+		verified := g["verified_by"].(int)
+		fmt.Printf("%-40s %-12s %-12s %9.1f%% %8d\n",
+			g["id"], g["category"], g["scenario"],
+			conf*100, verified)
+	}
+	fmt.Println()
+}
+
+func geneStatsCmd(engine *gene.Engine) {
+	stats := engine.GetStats()
+	geneCount := stats["genes"].(int)
+	capsuleCount := stats["capsules"].(int)
+	strategy := stats["strategy"].(string)
+	drift := stats["drift"].(float64)
+
+	fmt.Printf("\n%s Gene Pool Statistics\n\n", logo)
+	fmt.Printf("  Genes:          %d\n", geneCount)
+	fmt.Printf("  Capsules:       %d\n", capsuleCount)
+	fmt.Printf("  Strategy:       %s\n", strategy)
+	fmt.Printf("  Drift:          %.1f%%\n", drift*100)
+
+	driftLabel := "Normal"
+	if drift > 0.7 {
+		driftLabel = "High (exploratory mode recommended)"
+	} else if drift > 0.4 {
+		driftLabel = "Moderate"
+	} else {
+		driftLabel = "Low (stable pool)"
+	}
+	fmt.Printf("  Drift Level:    %s\n", driftLabel)
+
+	if capsuleCount > 0 && geneCount > 0 {
+		fmt.Printf("  Experience:     %.1f capsules/gene\n", float64(capsuleCount)/float64(geneCount))
+	}
+	fmt.Println()
+}
+
+func geneExportCmd(engine *gene.Engine) {
+	allGenes := engine.GetHighConfidenceGenes(0, 0)
+	if len(allGenes) == 0 {
+		fmt.Println("No genes to export.")
+		return
+	}
+
+	data, err := json.MarshalIndent(allGenes, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling genes: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(data))
 }
 
 func loadConfig() (*config.Config, error) {

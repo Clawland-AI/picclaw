@@ -9,12 +9,20 @@ import (
 	"time"
 )
 
+// GeneStatsProvider is an interface satisfied by the gene.Engine
+// to decouple the edge package from pkg/gene.
+type GeneStatsProvider interface {
+	GetStats() map[string]interface{}
+	GetHighConfidenceGenes(minConfidence float64, minVerifiedBy int) []map[string]interface{}
+}
+
 // Reporter periodically sends heartbeat and event reports
 // to the upstream Fleet Manager (L2 NanoClaw or L3 MoltClaw).
 type Reporter struct {
-	config   Config
-	client   *http.Client
-	stopCh   chan struct{}
+	config        Config
+	client        *http.Client
+	stopCh        chan struct{}
+	geneProvider  GeneStatsProvider
 }
 
 // NewReporter creates a new Edge Reporter.
@@ -53,6 +61,23 @@ func (r *Reporter) Stop() {
 	close(r.stopCh)
 }
 
+// SetGeneProvider attaches a gene stats provider to include
+// gene evolution metrics in heartbeat reports.
+func (r *Reporter) SetGeneProvider(gp GeneStatsProvider) {
+	r.geneProvider = gp
+}
+
+// PublishGene sends a high-confidence gene to the Fleet Manager
+// for cross-node sharing via the /fleet/genes/publish endpoint.
+func (r *Reporter) PublishGene(geneData map[string]interface{}) error {
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"gene":      geneData,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	return r.post("/fleet/genes/publish", payload)
+}
+
 // ReportEvent sends a one-off event to the Fleet Manager.
 func (r *Reporter) ReportEvent(eventType string, data map[string]any) error {
 	payload := map[string]any{
@@ -85,6 +110,12 @@ func (r *Reporter) sendHeartbeat() {
 		"status":    "online",
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
+
+	// Include gene evolution stats if provider is available
+	if r.geneProvider != nil {
+		payload["gene_stats"] = r.geneProvider.GetStats()
+	}
+
 	if err := r.post("/fleet/heartbeat", payload); err != nil {
 		log.Printf("[edge] heartbeat failed: %v", err)
 	}

@@ -15,7 +15,28 @@ type Config struct {
 	Providers ProvidersConfig `json:"providers"`
 	Gateway   GatewayConfig   `json:"gateway"`
 	Tools     ToolsConfig     `json:"tools"`
+	Edge      EdgeConfig      `json:"edge"`
+	Gene      GeneAppConfig   `json:"gene"`
 	mu        sync.RWMutex
+}
+
+// EdgeConfig holds edge API server and fleet reporter settings.
+type EdgeConfig struct {
+	Enabled           bool   `json:"enabled" env:"PICOCLAW_EDGE_ENABLED"`
+	Port              int    `json:"port" env:"PICOCLAW_EDGE_PORT"`
+	NodeID            string `json:"node_id" env:"PICOCLAW_EDGE_NODE_ID"`
+	NodeName          string `json:"node_name" env:"PICOCLAW_EDGE_NODE_NAME"`
+	CloudEndpoint     string `json:"cloud_endpoint" env:"PICOCLAW_EDGE_CLOUD_ENDPOINT"`
+	CloudToken        string `json:"cloud_token" env:"PICOCLAW_EDGE_CLOUD_TOKEN"`
+	HeartbeatSeconds  int    `json:"heartbeat_seconds" env:"PICOCLAW_EDGE_HEARTBEAT_SECONDS"`
+}
+
+// GeneAppConfig holds Gene Evolution engine settings exposed to the user.
+type GeneAppConfig struct {
+	Strategy      string  `json:"strategy" env:"PICOCLAW_GENE_STRATEGY"`
+	AutoPublish   bool    `json:"auto_publish" env:"PICOCLAW_GENE_AUTO_PUBLISH"`
+	MinConfidence float64 `json:"min_confidence" env:"PICOCLAW_GENE_MIN_CONFIDENCE"`
+	MinVerifiedBy int     `json:"min_verified_by" env:"PICOCLAW_GENE_MIN_VERIFIED_BY"`
 }
 
 type AgentsConfig struct {
@@ -196,6 +217,21 @@ func DefaultConfig() *Config {
 				},
 			},
 		},
+		Edge: EdgeConfig{
+			Enabled:          false,
+			Port:             9090,
+			NodeID:           "",
+			NodeName:         "picclaw-edge",
+			CloudEndpoint:    "http://localhost:8080",
+			CloudToken:       "",
+			HeartbeatSeconds: 30,
+		},
+		Gene: GeneAppConfig{
+			Strategy:      "balanced",
+			AutoPublish:   true,
+			MinConfidence: 0.7,
+			MinVerifiedBy: 3,
+		},
 	}
 }
 
@@ -287,6 +323,13 @@ func (c *Config) GetAPIBase() string {
 		return c.Providers.VLLM.APIBase
 	}
 	return ""
+}
+
+// EdgeEnabled returns whether the edge server is enabled.
+func (c *Config) EdgeEnabled() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Edge.Enabled
 }
 
 func expandHome(path string) string {

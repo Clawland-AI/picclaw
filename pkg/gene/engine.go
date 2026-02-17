@@ -165,6 +165,28 @@ func (e *Engine) GetStats() map[string]interface{} {
 	}
 }
 
+// GetHighConfidenceGenes returns genes that meet the given thresholds,
+// serialized as maps for cross-package use (e.g., edge reporter publishing).
+func (e *Engine) GetHighConfidenceGenes(minConfidence float64, minVerifiedBy int) []map[string]interface{} {
+	genes := e.store.GetGenes()
+	var result []map[string]interface{}
+	for _, g := range genes {
+		if g.Confidence >= minConfidence && g.VerifiedBy >= minVerifiedBy {
+			result = append(result, map[string]interface{}{
+				"id":            g.ID,
+				"category":      g.Category,
+				"scenario":      g.Scenario,
+				"signals_match": g.SignalsMatch,
+				"strategy":      g.Strategy,
+				"confidence":    g.Confidence,
+				"verified_by":   g.VerifiedBy,
+				"asset_id":      g.AssetID,
+			})
+		}
+	}
+	return result
+}
+
 // ExtractSignalsFromText exposes the signal extractor for external use.
 func (e *Engine) ExtractSignalsFromText(text string) []string {
 	return e.extractor.ExtractSignalsFromText(text)

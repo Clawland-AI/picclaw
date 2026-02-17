@@ -15,6 +15,8 @@ We built an open-source family of AI agents that run on hardware from $2 MCUs to
 
 Combined with cheap sensors ($5-50), these agents can sense (temperature, humidity, dissolved oxygen, vibration), think (LLM-powered analysis with 8+ providers), act (relays, valves, switches via GPIO), and report (Telegram, Discord, WhatsApp, 7 channels).
 
+What makes this different from traditional IoT: agents evolve their monitoring strategies through a Gene Evolution Protocol (CGEP). When an agent successfully handles a novel situation, it solidifies the experience into a "Gene" that can be shared across nodes. Think of it as biological evolution for monitoring strategies — the longer a deployment runs, the smarter it gets.
+
 Real-world examples:
 - $88 kit replaces $48K/yr data center night shift operator
 - $133 kit replaces $30K/yr fish pond patrol worker

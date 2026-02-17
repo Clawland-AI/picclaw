@@ -27,6 +27,10 @@ A family of AI agents at different scales:
 - **$133 kit** → replaces $30K/yr fish pond patrol worker (99% savings)
 - **$95 kit** → replaces $18K/yr greenhouse attendant (98% savings)
 
+## Self-Evolving Monitoring Strategies
+
+What sets Clawland apart from traditional IoT is the **Gene Evolution Protocol (CGEP)**. When an agent handles a novel situation successfully, the experience is solidified into a "Gene" — a reusable monitoring strategy pattern. Over time, agents evolve their own strategies through a biological evolution model: genes gain confidence through repeated success, and high-confidence genes can be shared across nodes via Fleet management.
+
 ## Build to Earn
 
 This isn't donation-ware. We're offering a deal:

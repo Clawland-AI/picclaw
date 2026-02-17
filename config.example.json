@@ -38,6 +38,12 @@
       "verification_token": "",
       "allow_from": []
     },
+    "qq": {
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
+      "allow_from": []
+    },
     "dingtalk": {
       "enabled": false,
       "client_id": "YOUR_CLIENT_ID",
@@ -86,5 +92,20 @@
   "gateway": {
     "host": "0.0.0.0",
     "port": 18790
+  },
+  "edge": {
+    "enabled": false,
+    "port": 9090,
+    "node_id": "",
+    "node_name": "picclaw-edge",
+    "cloud_endpoint": "http://localhost:8080",
+    "cloud_token": "",
+    "heartbeat_seconds": 30
+  },
+  "gene": {
+    "strategy": "balanced",
+    "auto_publish": true,
+    "min_confidence": 0.7,
+    "min_verified_by": 3
   }
 }

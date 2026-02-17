@@ -1,25 +1,25 @@
 <div align="center">
 <img src="assets/logo.jpg" alt="PicoClaw" width="512">
 
-<h1>PicoClaw: Ultra-Efficient AI Assistant in Go</h1>
+<h1>PicoClaw</h1>
 
-<h3>$10 Hardware · 10MB RAM · 1s Boot · 皮皮虾，我们走！</h3>
-<h3></h3>
+<h3>Self-Evolving Edge AI Agent in Go</h3>
 
 <p>
-<img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
-<img src="https://img.shields.io/badge/Arch-x86__64%2C%20ARM64%2C%20RISC--V-blue" alt="Hardware">
-<img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+<img src="https://img.shields.io/badge/Go-1.24-00ADD8?style=flat&logo=go&logoColor=white" alt="Go 1.24">
+<img src="https://img.shields.io/badge/RAM-<10MB-brightgreen" alt="<10MB RAM">
+<img src="https://img.shields.io/badge/Hardware-$10+-orange" alt="$10+ Hardware">
+<img src="https://img.shields.io/badge/Arch-x86__64%20|%20ARM64%20|%20RISC--V-blue" alt="Arch">
+<img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
 </div>
 
-
 ---
 
-🦐 PicoClaw is an ultra-lightweight personal AI Assistant inspired by [nanobot](https://github.com/HKUDS/nanobot), refactored from the ground up in Go through a self-bootstrapping process, where the AI agent itself drove the entire architectural migration and code optimization.
+PicoClaw is an ultra-lightweight AI agent written in Go that runs on $10 hardware with <10MB RAM. It connects to LLM providers, executes tools, talks through messaging channels, and **evolves its monitoring strategies over time** through a built-in Gene Evolution Protocol.
 
-⚡️ Runs on $10 hardware with <10MB RAM: That's 99% less memory than OpenClaw and 98% cheaper than a Mac mini!
+Originally inspired by [nanobot](https://github.com/HKUDS/nanobot), PicoClaw was refactored from the ground up in Go through a self-bootstrapping process where the AI agent drove the entire migration.
 
 <table align="center">
   <tr align="center">
@@ -36,548 +36,395 @@
   </tr>
 </table>
 
-## 📢 News
-2026-02-17 🧬 Gene Evolution Protocol (CGEP) — Agents now learn and reuse monitoring strategies. Self-evolving edge AI!
+## What It Actually Does
 
-2026-02-16 🏗️ PicoClaw joins [Clawland-AI](https://github.com/Clawland-AI) — Open-source edge AI Agent ecosystem with Build-to-Earn revenue sharing.
+PicoClaw is a single Go binary that:
 
-2026-02-09 🎉 PicoClaw Launched! Built in 1 day to bring AI Agents to $10 hardware with <10MB RAM. 🦐 皮皮虾，我们走！
+1. **Connects to an LLM** (Zhipu, OpenRouter, Anthropic, OpenAI, Gemini, Groq, or any vLLM endpoint)
+2. **Executes tools** (12 built-in: file I/O, shell exec, web search/fetch, cron, messaging, gene reporting)
+3. **Talks through channels** (Telegram, Discord, QQ, DingTalk, Feishu, WhatsApp, MaixCam)
+4. **Learns from experience** via the Gene Evolution Protocol — successful monitoring strategies are solidified into reusable "genes"
+5. **Reports to fleet** via an optional Edge API server for multi-node coordination
 
-## ✨ Features
+|  | OpenClaw (TS) | NanoBot (Python) | **PicoClaw (Go)** |
+|---|---|---|---|
+| **RAM** | >1 GB | >100 MB | **< 10 MB** |
+| **Boot** (0.8 GHz) | >500 s | >30 s | **< 1 s** |
+| **Min Hardware** | Mac Mini $599 | SBC ~$50 | **Any Linux $10** |
+| **Binary** | Node runtime | Python runtime | **Single static binary** |
 
-🪶 **Ultra-Lightweight**: <10MB Memory footprint — 99% smaller than Clawdbot - core functionality.
+## Architecture
 
-💰 **Minimal Cost**: Efficient enough to run on $10 Hardware — 98% cheaper than a Mac mini.
-
-⚡️ **Lightning Fast**: 400X Faster startup time, boot in 1 second even in 0.6GHz single core.
-
-🌍 **True Portability**: Single self-contained binary across RISC-V, ARM, and x86, One-click to Go!
-
-🤖 **AI-Bootstrapped**: Autonomous Go-native implementation — 95% Agent-generated core with human-in-the-loop refinement.
-
-|  | OpenClaw  | NanoBot | **PicoClaw** |
-| --- | --- | --- |--- |
-| **Language** | TypeScript | Python | **Go** |
-| **RAM** | >1GB |>100MB| **< 10MB** |
-| **Startup**</br>(0.8GHz core) | >500s | >30s |  **<1s** |
-| **Cost** | Mac Mini 599$ | Most Linux SBC </br>~50$ |**Any Linux Board**</br>**As low as 10$** |
-<img src="assets/compare.jpg" alt="PicoClaw" width="512">
-
-
-## 🧬 Gene Evolution (CGEP)
-
-PicoClaw includes a **Clawland Gene Evolution Protocol** — a self-evolving strategy system adapted from the [GEP protocol](https://github.com/autogame-17/evolver). Agents learn from experience and reuse proven monitoring strategies.
-
-**How it works:**
-- **Genes** encode reusable monitoring strategies (e.g. "cross-check temperature with adjacent rack sensors before alerting")
-- **Capsules** record what happened when a Gene was applied (outcome, sensor data, confidence)
-- The agent **auto-solidifies** experiences after tool execution — successful novel handling becomes a new Gene
-- Genes are **injected into the system prompt** so the LLM prefers verified strategies over ad-hoc reasoning
-
-**Seed Genes (6 built-in):**
-
-| Gene | Category | Scenario |
-|------|----------|----------|
-| `gene_sensor_repair_from_errors` | repair | generic |
-| `gene_threshold_optimize_from_history` | optimize | generic |
-| `gene_cross_sensor_innovate` | innovate | generic |
-| `gene_dc_temp_spike_crosscheck` | repair | datacenter |
-| `gene_pond_do_night_emergency` | repair | aquaculture |
-| `gene_greenhouse_ventilation_schedule` | optimize | greenhouse |
-
-**Strategy Presets:**
-
-| Preset | Min Confidence | Min Verified | Use Case |
-|--------|---------------|-------------|----------|
-| `conservative` | 90% | 5 nodes | Production / critical infrastructure |
-| `balanced` | 70% | 2 nodes | Default for most deployments |
-| `exploratory` | 30% | 0 | Development / testing new scenarios |
-| `repair-only` | 50% | 1 | Emergency mode after failures |
-
-The agent can also explicitly report experiences via the `report_gene` tool.
-
-## 🦾 Demonstration
-### 🛠️ Standard Assistant Workflows
-<table align="center">
-  <tr align="center">
-    <th><p align="center">🧩 Full-Stack Engineer</p></th>
-    <th><p align="center">🗂️ Logging & Planning Management</p></th>
-    <th><p align="center">🔎 Web Search & Learning</p></th>
-  </tr>
-  <tr>
-    <td align="center"><p align="center"><img src="assets/picoclaw_code.gif" width="240" height="180"></p></td>
-    <td align="center"><p align="center"><img src="assets/picoclaw_memory.gif" width="240" height="180"></p></td>
-    <td align="center"><p align="center"><img src="assets/picoclaw_search.gif" width="240" height="180"></p></td>
-  </tr>
-  <tr>
-    <td align="center">Develop • Deploy • Scale</td>
-    <td align="center">Schedule • Automate • Memory</td>
-    <td align="center">Discovery • Insights • Trends</td>
-  </tr>
-</table>
-
-### 🐜 Innovative Low-Footprint Deploy
-PicoClaw can be deployed on almost any Linux device!
-
-- $9.9 [LicheeRV-Nano](https://www.aliexpress.com/item/1005006519668532.html)  E(Ethernet) or W(WiFi6) version, for Minimal Home Assistant
-- $30~50 [NanoKVM](https://www.aliexpress.com/item/1005007369816019.html), or $100 [NanoKVM-Pro](https://www.aliexpress.com/item/1005010048471263.html) for Automated Server Maintenance
-- $50 [MaixCAM](https://www.aliexpress.com/item/1005008053333693.html) or $100 [MaixCAM2](https://www.kickstarter.com/projects/zepan/maixcam2-build-your-next-gen-4k-ai-camera) for Smart Monitoring
-
-https://private-user-images.githubusercontent.com/83055338/547056448-e7b031ff-d6f5-4468-bcca-5726b6fecb5c.mp4
-
-🌟 More Deployment Cases Await！
-
-## 📦 Install
-
-### Install with precompiled binary
-
-Download the firmware for your platform from the [release](https://github.com/sipeed/picoclaw/releases) page.
-
-### Install from source (latest features, recommended for development)
-
-```bash
-git clone https://github.com/sipeed/picoclaw.git
-
-cd picoclaw
-make deps
-
-# Build, no need to install
-make build
-
-# Build for multiple platforms
-make build-all
-
-# Build And Install
-make install
+```
+cmd/picoclaw/main.go          CLI entry point (onboard|agent|gateway|status|cron|skills|gene|version)
+pkg/
+  agent/                       Agent loop, context builder, memory manager
+  bus/                         Internal message bus
+  channels/                    7 messaging channels (telegram, discord, qq, dingtalk, feishu, whatsapp, maixcam)
+  config/                      JSON + env var configuration (agents, channels, providers, gateway, edge, gene)
+  cron/                        Cron scheduler service
+  edge/                        Edge API server + fleet heartbeat reporter
+  gene/                        Gene Evolution Protocol (CGEP) engine
+    ├── types.go               Gene, Capsule, EvolutionEvent, StrategyPreset structs
+    ├── store.go               JSON file persistence (genes.json, capsules.json, events.jsonl)
+    ├── selector.go            Gene scoring, selection, drift intensity computation
+    ├── solidify.go            Experience solidification into Capsules and Genes
+    ├── signals.go             Signal extraction from text/memory (8 signal types)
+    ├── engine.go              Top-level orchestrator
+    ├── seeds.go               6 built-in seed genes
+    └── hash.go                SHA-256 content-addressable asset IDs
+  heartbeat/                   Periodic heartbeat service
+  logger/                      Structured JSON logger
+  providers/                   Unified HTTP LLM provider (OpenRouter, Anthropic, OpenAI, Gemini, Zhipu, Groq, vLLM)
+  session/                     Conversation session manager
+  skills/                      Skill loader + installer (from Git repos)
+  tools/                       12 tools: read_file, write_file, edit_file, append_file, list_dir,
+                                         exec, spawn, web_search, web_fetch, message, cron, report_gene
+  utils/                       String utilities
+  voice/                       Groq Whisper voice transcription
+skills/                        6 built-in skills (datacenter-monitoring, github, summarize, weather, tmux, skill-creator)
 ```
 
-### 🚀 Quick Start
+## Quick Start
 
-> [!TIP]
-> Set your API key in `~/.picoclaw/config.json`.
-> Get API keys: [OpenRouter](https://openrouter.ai/keys) (LLM) · [Zhipu](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) (LLM)
-> Web search is **optional** - get free [Brave Search API](https://brave.com/search/api) (2000 free queries/month)
+**1. Build**
 
-**1. Initialize**
+```bash
+git clone https://github.com/Clawland-AI/picclaw.git
+cd picclaw
+make build          # Single binary in build/
+# or: make build-all  for linux/darwin x amd64/arm64/riscv64
+```
+
+**2. Initialize**
 
 ```bash
 picoclaw onboard
 ```
 
-**2. Configure** (`~/.picoclaw/config.json`)
+**3. Configure** (`~/.picoclaw/config.json`)
 
 ```json
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
       "model": "glm-4.7",
-      "max_tokens": 8192,
-      "temperature": 0.7,
-      "max_tool_iterations": 20
+      "max_tokens": 8192
     }
   },
   "providers": {
-    "openrouter": {
-      "api_key": "xxx",
-      "api_base": "https://openrouter.ai/api/v1"
-    }
-  },
-  "tools": {
-    "web": {
-      "search": {
-        "api_key": "YOUR_BRAVE_API_KEY",
-        "max_results": 5
-      }
+    "zhipu": {
+      "api_key": "YOUR_API_KEY"
     }
   }
 }
 ```
 
-**3. Get API Keys**
+Minimum config: pick one provider and set its API key. Everything else has defaults.
 
-- **LLM Provider**: [OpenRouter](https://openrouter.ai/keys) · [Zhipu](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) · [Anthropic](https://console.anthropic.com) · [OpenAI](https://platform.openai.com) · [Gemini](https://aistudio.google.com/api-keys)
-- **Web Search** (optional): [Brave Search](https://brave.com/search/api) - Free tier available (2000 requests/month)
-
-> **Note**: See `config.example.json` for a complete configuration template.
-
-**4. Chat**
+**4. Use**
 
 ```bash
-picoclaw agent -m "What is 2+2?"
+picoclaw agent -m "What is 2+2?"     # One-shot query
+picoclaw agent                         # Interactive chat
+picoclaw gateway                       # Start with channels + cron + edge
 ```
 
-That's it! You have a working AI assistant in 2 minutes.
+## LLM Providers
 
----
+All providers use a unified HTTP interface. Pick one:
 
-## 💬 Chat Apps
+| Provider | Model prefix | Get API Key |
+|----------|-------------|-------------|
+| **Zhipu** | `glm-*` | [bigmodel.cn](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) |
+| **OpenRouter** | `openrouter/*`, `anthropic/*`, `openai/*`, etc. | [openrouter.ai](https://openrouter.ai/keys) |
+| **Anthropic** | `claude-*` | [console.anthropic.com](https://console.anthropic.com) |
+| **OpenAI** | `gpt-*` | [platform.openai.com](https://platform.openai.com) |
+| **Gemini** | `gemini-*` | [aistudio.google.com](https://aistudio.google.com) |
+| **Groq** | `groq/*` (also enables voice transcription) | [console.groq.com](https://console.groq.com) |
+| **vLLM** | any (set `api_base`) | Self-hosted |
 
-Talk to your picoclaw through Telegram, Discord, or DingTalk
+## Messaging Channels
 
-| Channel | Setup |
-|---------|-------|
-| **Telegram** | Easy (just a token) |
-| **Discord** | Easy (bot token + intents) |
-| **QQ** | Easy (AppID + AppSecret) |
-| **DingTalk** | Medium (app credentials) |
+Start the gateway to connect channels:
+
+```bash
+picoclaw gateway
+```
+
+| Channel | Config keys | Notes |
+|---------|------------|-------|
+| **Telegram** | `token`, `allow_from` | Recommended. Supports voice messages (with Groq) |
+| **Discord** | `token`, `allow_from` | Enable MESSAGE CONTENT INTENT |
+| **QQ** | `app_id`, `app_secret` | QQ Open Platform |
+| **DingTalk** | `client_id`, `client_secret` | Internal app |
+| **Feishu** | `app_id`, `app_secret`, `encrypt_key`, `verification_token` | Lark/Feishu bot |
+| **WhatsApp** | `bridge_url` | Via WhatsApp bridge |
+| **MaixCam** | `host`, `port` | Direct hardware connection |
 
 <details>
-<summary><b>Telegram</b> (Recommended)</summary>
-
-**1. Create a bot**
-
-- Open Telegram, search `@BotFather`
-- Send `/newbot`, follow prompts
-- Copy the token
-
-**2. Configure**
+<summary><b>Telegram example config</b></summary>
 
 ```json
 {
   "channels": {
     "telegram": {
       "enabled": true,
-      "token": "YOUR_BOT_TOKEN",
-      "allowFrom": ["YOUR_USER_ID"]
+      "token": "123456:ABC-DEF...",
+      "allow_from": ["YOUR_USER_ID"]
     }
   }
 }
 ```
 
-> Get your user ID from `@userinfobot` on Telegram.
+Get a token from `@BotFather` on Telegram. Get your user ID from `@userinfobot`.
 
-**3. Run**
-
-```bash
-picoclaw gateway
-```
-</details>
-
-
-<details>
-<summary><b>Discord</b></summary>
-
-**1. Create a bot**
-- Go to https://discord.com/developers/applications
-- Create an application → Bot → Add Bot
-- Copy the bot token
-
-**2. Enable intents**
-- In the Bot settings, enable **MESSAGE CONTENT INTENT**
-- (Optional) Enable **SERVER MEMBERS INTENT** if you plan to use allow lists based on member data
-
-**3. Get your User ID**
-- Discord Settings → Advanced → enable **Developer Mode**
-- Right-click your avatar → **Copy User ID**
-
-**4. Configure**
-
-```json
-{
-  "channels": {
-    "discord": {
-      "enabled": true,
-      "token": "YOUR_BOT_TOKEN",
-      "allowFrom": ["YOUR_USER_ID"]
-    }
-  }
-}
-```
-
-**5. Invite the bot**
-- OAuth2 → URL Generator
-- Scopes: `bot`
-- Bot Permissions: `Send Messages`, `Read Message History`
-- Open the generated invite URL and add the bot to your server
-
-**6. Run**
-
-```bash
-picoclaw gateway
-```
-
-</details>
-
-
-<details>
-<summary><b>QQ</b></summary>
-
-**1. Create a bot**
-
-- Go to [QQ Open Platform](https://connect.qq.com/)
-- Create an application → Get **AppID** and **AppSecret**
-
-**2. Configure**
-
-```json
-{
-  "channels": {
-    "qq": {
-      "enabled": true,
-      "app_id": "YOUR_APP_ID",
-      "app_secret": "YOUR_APP_SECRET",
-      "allow_from": []
-    }
-  }
-}
-```
-
-> Set `allow_from` to empty to allow all users, or specify QQ numbers to restrict access.
-
-**3. Run**
-
-```bash
-picoclaw gateway
-```
-</details>
-
-<details>
-<summary><b>DingTalk</b></summary>
-
-**1. Create a bot**
-
-- Go to [Open Platform](https://open.dingtalk.com/)
-- Create an internal app
-- Copy Client ID and Client Secret
-
-**2. Configure**
-
-```json
-{
-  "channels": {
-    "dingtalk": {
-      "enabled": true,
-      "client_id": "YOUR_CLIENT_ID",
-      "client_secret": "YOUR_CLIENT_SECRET",
-      "allow_from": []
-    }
-  }
-}
-```
-
-> Set `allow_from` to empty to allow all users, or specify QQ numbers to restrict access.
-
-**3. Run**
-
-```bash
-picoclaw gateway
-```
-</details>
-
-## ⚙️ Configuration
-
-Config file: `~/.picoclaw/config.json`
-
-### Workspace Layout
-
-PicoClaw stores data in your configured workspace (default: `~/.picoclaw/workspace`):
-
-```
-~/.picoclaw/workspace/
-├── genes/            # Gene Evolution data (strategies, capsules, events)
-├── sessions/         # Conversation sessions and history
-├── memory/           # Long-term memory (MEMORY.md)
-├── cron/             # Scheduled jobs database
-├── skills/           # Custom skills
-├── AGENTS.md         # Agent behavior guide
-├── IDENTITY.md       # Agent identity
-├── SOUL.md           # Agent soul
-├── TOOLS.md          # Tool descriptions
-└── USER.md           # User preferences
-```
-
-### Providers
-
-> [!NOTE]
-> Groq provides free voice transcription via Whisper. If configured, Telegram voice messages will be automatically transcribed.
-
-| Provider | Purpose | Get API Key |
-|----------|---------|-------------|
-| `gemini` | LLM (Gemini direct) | [aistudio.google.com](https://aistudio.google.com) |
-| `zhipu` | LLM (Zhipu direct) | [bigmodel.cn](bigmodel.cn) |
-| `openrouter(To be tested)` | LLM (recommended, access to all models) | [openrouter.ai](https://openrouter.ai) |
-| `anthropic(To be tested)` | LLM (Claude direct) | [console.anthropic.com](https://console.anthropic.com) |
-| `openai(To be tested)` | LLM (GPT direct) | [platform.openai.com](https://platform.openai.com) |
-| `deepseek(To be tested)` | LLM (DeepSeek direct) | [platform.deepseek.com](https://platform.deepseek.com) |
-| `groq` | LLM + **Voice transcription** (Whisper) | [console.groq.com](https://console.groq.com) |
-
-
-<details>
-<summary><b>Zhipu</b></summary>
-
-**1. Get API key and base URL**
-- Get [API key](https://bigmodel.cn/usercenter/proj-mgmt/apikeys)
-
-**2. Configure**
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "workspace": "~/.picoclaw/workspace",
-      "model": "glm-4.7",
-      "max_tokens": 8192,
-      "temperature": 0.7,
-      "max_tool_iterations": 20
-    }
-  },
-  "providers": {
-    "zhipu": {
-      "api_key": "Your API Key",
-      "api_base": "https://open.bigmodel.cn/api/paas/v4"
-    },
-  },
-}
-```
-
-**3. Run**
-
-```bash
-picoclaw agent -m "Hello"
-```
 </details>
 
 <details>
 <summary><b>Full config example</b></summary>
 
+See [config.example.json](config.example.json) for all available options.
+
+</details>
+
+## Tools (12 built-in)
+
+| Tool | Description |
+|------|-------------|
+| `read_file` | Read file contents |
+| `write_file` | Create or overwrite a file |
+| `edit_file` | Search-and-replace edit in a file |
+| `append_file` | Append content to a file |
+| `list_dir` | List directory contents |
+| `exec` | Execute shell commands |
+| `spawn` | Run background processes |
+| `web_search` | Search the web (Brave Search API) |
+| `web_fetch` | Fetch and extract web page content |
+| `message` | Send messages through configured channels |
+| `cron` | Create/manage scheduled tasks |
+| `report_gene` | Report a learned experience to the Gene Evolution system |
+
+## Gene Evolution Protocol (CGEP)
+
+PicoClaw includes a self-evolving strategy system. Agents learn from experience and reuse proven monitoring strategies.
+
+**How it works:**
+
+1. **Signals** are extracted from sensor data, memory, and daily notes (8 types: `sensor_error`, `threshold_breach`, `cross_sensor_anomaly`, `new_pattern_detected`, `response_too_slow`, `strategy_proven`, `unknown_situation`, `time_pattern`)
+2. Active signals are **matched against the gene pool** — the best-scoring genes are injected into the LLM system prompt
+3. After handling, experiences are **solidified** into Capsules. Successful novel handling creates new Genes.
+4. Gene confidence adjusts over time: success increases it, failure decreases it
+5. High-confidence genes can be **published to Fleet** for cross-node sharing
+
+**6 seed genes ship by default:**
+
+| Gene | Category | Scenario | What it does |
+|------|----------|----------|-------------|
+| `gene_sensor_repair_from_errors` | repair | generic | Retry failed sensors, switch to backup |
+| `gene_threshold_optimize_from_history` | optimize | generic | Adjust thresholds using 7-day statistics |
+| `gene_cross_sensor_innovate` | innovate | generic | Detect cross-sensor correlations |
+| `gene_dc_temp_spike_crosscheck` | repair | datacenter | Cross-check rack temps before alerting |
+| `gene_pond_do_night_emergency` | repair | aquaculture | Night-time dissolved oxygen emergency |
+| `gene_greenhouse_ventilation_schedule` | optimize | greenhouse | Optimize vent timing from rolling data |
+
+**Strategy presets** control which genes are applied:
+
+| Preset | Min Confidence | Min Verified | Use case |
+|--------|---------------|-------------|----------|
+| `conservative` | 90% | 5 | Production critical systems |
+| `balanced` | 70% | 2 | Default |
+| `exploratory` | 30% | 0 | Testing new scenarios |
+| `repair-only` | 50% | 1 | Emergency mode |
+
+**Configure in `~/.picoclaw/config.json`:**
+
 ```json
 {
-  "agents": {
-    "defaults": {
-      "model": "anthropic/claude-opus-4-5"
-    }
-  },
-  "providers": {
-    "openrouter": {
-      "api_key": "sk-or-v1-xxx"
-    },
-    "groq": {
-      "api_key": "gsk_xxx"
-    }
-  },
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "token": "123456:ABC...",
-      "allow_from": ["123456789"]
-    },
-    "discord": {
-      "enabled": true,
-      "token": "",
-      "allow_from": [""]
-    },
-    "whatsapp": {
-      "enabled": false
-    },
-    "feishu": {
-      "enabled": false,
-      "app_id": "cli_xxx",
-      "app_secret": "xxx",
-      "encrypt_key": "",
-      "verification_token": "",
-      "allow_from": []
-    },
-    "qq": {
-      "enabled": false,
-      "app_id": "",
-      "app_secret": "",
-      "allow_from": []
-    }
-  },
-  "tools": {
-    "web": {
-      "search": {
-        "api_key": "BSA..."
-      }
-    }
+  "gene": {
+    "strategy": "balanced",
+    "auto_publish": true,
+    "min_confidence": 0.7,
+    "min_verified_by": 3
   }
 }
 ```
 
-</details>
+**CLI:**
+
+```bash
+picoclaw gene list      # Show genes with confidence scores
+picoclaw gene stats     # Pool statistics and drift intensity
+picoclaw gene export    # Export genes as JSON
+```
+
+## Edge Server
+
+PicoClaw can act as an L1 edge node in a distributed architecture, reporting to upstream fleet managers:
+
+```json
+{
+  "edge": {
+    "enabled": true,
+    "port": 9090,
+    "node_id": "dc-rack-a1",
+    "node_name": "Datacenter Rack A1",
+    "cloud_endpoint": "http://nanoclaw:8080",
+    "cloud_token": "...",
+    "heartbeat_seconds": 30
+  }
+}
+```
+
+When enabled, PicoClaw exposes:
+- `GET /healthz` — Health check
+- `GET /api/v1/status` — Node status
+- `POST /api/v1/command` — Receive commands from fleet
+
+And periodically sends heartbeats (including gene stats) to the configured fleet manager.
+
+## Skills (6 built-in)
+
+Skills are markdown files that teach the agent domain-specific knowledge.
+
+| Skill | Description |
+|-------|-------------|
+| `datacenter-monitoring` | Rack temperature monitoring with mock sensors and Gene Evolution demo |
+| `github` | GitHub workflow assistance |
+| `summarize` | Text summarization |
+| `weather` | Weather lookup (no API key needed) |
+| `tmux` | Terminal multiplexer management |
+| `skill-creator` | Create new skills |
+
+```bash
+picoclaw skills list           # List installed skills
+picoclaw skills install <url>  # Install from Git repo
+picoclaw skills install-builtin  # Install all built-in skills
+```
+
+## Datacenter Monitoring Demo
+
+The `datacenter-monitoring` skill includes a complete end-to-end demo:
+
+```bash
+# Test with mock sensors
+python3 skills/datacenter-monitoring/scripts/mock-sensor.py --all --summary
+
+# Simulate a temperature spike
+python3 skills/datacenter-monitoring/scripts/mock-sensor.py --rack A1 --spike
+
+# Simulate a sensor failure
+python3 skills/datacenter-monitoring/scripts/mock-sensor.py --rack B2 --fail
+
+# Random chaos mode (10% failures, 15% spikes)
+python3 skills/datacenter-monitoring/scripts/mock-sensor.py --all --chaos --summary
+```
+
+See [skills/datacenter-monitoring/DEPLOY.md](skills/datacenter-monitoring/DEPLOY.md) for full deployment guide with real hardware.
 
 ## CLI Reference
 
 | Command | Description |
 |---------|-------------|
-| `picoclaw onboard` | Initialize config & workspace |
-| `picoclaw agent -m "..."` | Chat with the agent |
+| `picoclaw onboard` | Initialize config and workspace |
+| `picoclaw agent -m "..."` | One-shot chat |
 | `picoclaw agent` | Interactive chat mode |
-| `picoclaw gateway` | Start the gateway |
-| `picoclaw status` | Show status |
-| `picoclaw cron list` | List all scheduled jobs |
-| `picoclaw cron add ...` | Add a scheduled job |
+| `picoclaw gateway` | Start gateway (channels + cron + edge + heartbeat) |
+| `picoclaw status` | Show configuration status |
+| `picoclaw cron list` | List scheduled jobs |
+| `picoclaw cron add` | Add a scheduled job |
+| `picoclaw skills list` | List installed skills |
+| `picoclaw skills install <url>` | Install skill from Git |
+| `picoclaw gene list` | Show local genes |
+| `picoclaw gene stats` | Gene pool statistics |
+| `picoclaw gene export` | Export genes as JSON |
+| `picoclaw version` | Show version |
 
-### Scheduled Tasks / Reminders
+## Hardware Targets
 
-PicoClaw supports scheduled reminders and recurring tasks through the `cron` tool:
+PicoClaw runs on anything with Linux and a network connection:
 
-- **One-time reminders**: "Remind me in 10 minutes" → triggers once after 10min
-- **Recurring tasks**: "Remind me every 2 hours" → triggers every 2 hours
-- **Cron expressions**: "Remind me at 9am daily" → uses cron expression
+| Device | Price | Arch | Use case |
+|--------|-------|------|----------|
+| [LicheeRV Nano](https://www.aliexpress.com/item/1005006519668532.html) | $10 | RISC-V | Minimal edge agent |
+| [NanoKVM](https://www.aliexpress.com/item/1005007369816019.html) | $30-50 | RISC-V | Server monitoring |
+| [MaixCAM](https://www.aliexpress.com/item/1005008053333693.html) | $50-100 | RISC-V | Vision + AI monitoring |
+| Raspberry Pi Zero 2W | $15 | ARM64 | General purpose |
+| Any Linux x86/ARM server | - | x86/ARM | Cloud or on-prem |
 
-Jobs are stored in `~/.picoclaw/workspace/cron/` and processed automatically.
+https://private-user-images.githubusercontent.com/83055338/547056448-e7b031ff-d6f5-4468-bcca-5726b6fecb5c.mp4
 
-## 🤝 Contribute & Roadmap
+## Demonstrations
 
-PRs welcome! The codebase is intentionally small and readable. 🤗
+<table align="center">
+  <tr align="center">
+    <th>Full-Stack Engineering</th>
+    <th>Logging & Planning</th>
+    <th>Web Search</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/picoclaw_code.gif" width="240" height="180"></td>
+    <td align="center"><img src="assets/picoclaw_memory.gif" width="240" height="180"></td>
+    <td align="center"><img src="assets/picoclaw_search.gif" width="240" height="180"></td>
+  </tr>
+</table>
 
-### Clawland Ecosystem
+## Workspace Layout
 
-PicoClaw is the **L1 edge agent** in the [Clawland-AI](https://github.com/Clawland-AI) ecosystem:
+```
+~/.picoclaw/
+├── config.json               # Main configuration
+└── workspace/
+    ├── genes/                # Gene Evolution data
+    │   ├── genes.json        #   Strategy definitions
+    │   ├── capsules.json     #   Solidified experiences
+    │   └── events.jsonl      #   Audit trail
+    ├── sessions/             # Conversation history
+    ├── memory/               # Long-term memory (MEMORY.md + daily notes)
+    ├── cron/                 # Scheduled jobs
+    ├── skills/               # Installed skills
+    ├── AGENTS.md             # Agent behavior guide
+    ├── IDENTITY.md           # Agent identity
+    └── USER.md               # User preferences
+```
 
-| Layer | Repo | Role |
-|-------|------|------|
-| **L1 Edge** | **picclaw** (this repo) | Edge AI agent on $10 hardware |
-| **L2 Regional** | [nanoclaw](https://github.com/Clawland-AI/nanoclaw) | Regional gateway (Python) |
-| **L3 Cloud** | [moltclaw](https://github.com/Clawland-AI/moltclaw) | Cloud AI gateway (TypeScript) |
-| **L0 MCU** | [microclaw](https://github.com/Clawland-AI/microclaw) | Microcontroller agent (C/Rust) |
+## Clawland Ecosystem
 
-**Build to Earn**: Contributors share 20% of net revenue through the [Contributor Revenue Pool](https://github.com/Clawland-AI). First 10 core contributors get a 0.5% lifetime bonus.
+PicoClaw is the **L1 edge agent** in the [Clawland-AI](https://github.com/Clawland-AI) open-source ecosystem:
 
-discord:  https://discord.gg/V4sAZ9XWpN
+| Layer | Repo | Language | Role |
+|-------|------|----------|------|
+| **L0 MCU** | [microclaw](https://github.com/Clawland-AI/microclaw) | C/Rust | Sensor-level agent on $2 MCUs |
+| **L1 Edge** | **picclaw** (this repo) | Go | Edge AI agent on $10 hardware |
+| **L2 Regional** | [nanoclaw](https://github.com/Clawland-AI/nanoclaw) | Python | Regional gateway on $50 SBCs |
+| **L3 Cloud** | [moltclaw](https://github.com/Clawland-AI/moltclaw) | TypeScript | Cloud AI gateway + fleet management |
 
-<img src="assets/wechat.png" alt="PicoClaw" width="512">
+**Build to Earn**: Contributors share 20% of net revenue through the Contributor Revenue Pool. See [Clawland-AI](https://github.com/Clawland-AI) for details.
 
+## Contributing
 
-## 🐛 Troubleshooting
+PRs welcome. The codebase is ~7500 lines of Go across 15 packages, intentionally small and readable.
 
-### Web search says "API 配置问题"
+```bash
+make test       # Run all tests
+make lint       # Run golangci-lint
+make build-all  # Build for all platforms
+```
 
-This is normal if you haven't configured a search API key yet. PicoClaw will provide helpful links for manual searching.
+Discord: https://discord.gg/V4sAZ9XWpN
 
-To enable web search:
-1. Get a free API key at [https://brave.com/search/api](https://brave.com/search/api) (2000 free queries/month)
-2. Add to `~/.picoclaw/config.json`:
-   ```json
-   {
-     "tools": {
-       "web": {
-         "search": {
-           "api_key": "YOUR_BRAVE_API_KEY",
-           "max_results": 5
-         }
-       }
-     }
-   }
-   ```
+<img src="assets/wechat.png" alt="WeChat" width="300">
 
-### Getting content filtering errors
+## Troubleshooting
 
-Some providers (like Zhipu) have content filtering. Try rephrasing your query or use a different model.
+**Web search returns "API configuration error"** — This is normal without a Brave Search API key. Get a free key at [brave.com/search/api](https://brave.com/search/api) (2000 free queries/month) and add it to `tools.web.search.api_key`.
 
-### Telegram bot says "Conflict: terminated by other getUpdates"
+**"Conflict: terminated by other getUpdates"** — Another instance of the Telegram bot is running. Only one `picoclaw gateway` per bot token.
 
-This happens when another instance of the bot is running. Make sure only one `picoclaw gateway` is running at a time.
+**Content filtering errors** — Some providers (Zhipu) have content filtering. Try rephrasing or switching models.
 
----
+## License
 
-## 📝 API Key Comparison
+MIT License. See [LICENSE](LICENSE).
 
-| Service | Free Tier | Use Case |
-|---------|-----------|-----------|
-| **OpenRouter** | 200K tokens/month | Multiple models (Claude, GPT-4, etc.) |
-| **Zhipu** | 200K tokens/month | Best for Chinese users |
-| **Brave Search** | 2000 queries/month | Web search functionality |
-| **Groq** | Free tier available | Fast inference (Llama, Mixtral) |
+Based on [nanobot](https://github.com/HKUDS/nanobot) by HKUDS.
