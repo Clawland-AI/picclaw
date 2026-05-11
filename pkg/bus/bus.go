@@ -26,7 +26,10 @@ func (mb *MessageBus) PublishInbound(msg InboundMessage) {
 
 func (mb *MessageBus) ConsumeInbound(ctx context.Context) (InboundMessage, bool) {
 	select {
-	case msg := <-mb.inbound:
+	case msg, ok := <-mb.inbound:
+		if !ok {
+			return InboundMessage{}, false
+		}
 		return msg, true
 	case <-ctx.Done():
 		return InboundMessage{}, false
@@ -39,7 +42,10 @@ func (mb *MessageBus) PublishOutbound(msg OutboundMessage) {
 
 func (mb *MessageBus) SubscribeOutbound(ctx context.Context) (OutboundMessage, bool) {
 	select {
-	case msg := <-mb.outbound:
+	case msg, ok := <-mb.outbound:
+		if !ok {
+			return OutboundMessage{}, false
+		}
 		return msg, true
 	case <-ctx.Done():
 		return OutboundMessage{}, false

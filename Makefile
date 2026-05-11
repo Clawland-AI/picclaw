@@ -1,4 +1,4 @@
-.PHONY: all build install uninstall clean help test
+.PHONY: all build install uninstall clean help test lint
 
 # Build variables
 BINARY_NAME=picoclaw
@@ -140,6 +140,14 @@ clean:
 ## fmt: Format Go code
 fmt:
 	@$(GO) fmt ./...
+
+## test: Run all Go tests
+test:
+	$(GO) test ./...
+
+## lint: Run go vet
+lint:
+	$(GO) vet ./...
 
 ## deps: Update dependencies
 deps:

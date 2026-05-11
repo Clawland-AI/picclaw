@@ -1,0 +1,12 @@
+.git
+.github
+build
+dist
+coverage.out
+*.test
+*.log
+.env
+.env.*
+node_modules
+.DS_Store
+clawland-org

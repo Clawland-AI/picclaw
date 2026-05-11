@@ -130,6 +130,28 @@ picoclaw agent                         # Interactive chat
 picoclaw gateway                       # Start with channels + cron + edge
 ```
 
+## Docker
+
+Build the multi-stage container image:
+
+```bash
+docker build -t picoclaw:dev .
+```
+
+Run the gateway with a mounted config directory. The gateway and edge ports can be changed with the same environment variables that PicoClaw reads from config:
+
+```bash
+docker run --rm \
+  -v "$HOME/.picoclaw:/home/picoclaw/.picoclaw" \
+  -e PICOCLAW_GATEWAY_PORT=18790 \
+  -e PICOCLAW_EDGE_PORT=9090 \
+  -p 18790:18790 \
+  -p 9090:9090 \
+  picoclaw:dev gateway
+```
+
+The Dockerfile builds a stripped and UPX-compressed Linux binary in a Go builder stage, then copies only the binary plus runtime certificates into an Alpine runtime image.
+
 ## LLM Providers
 
 All providers use a unified HTTP interface. Pick one:
@@ -401,12 +423,12 @@ PicoClaw is the **L1 edge agent** in the [Clawland-AI](https://github.com/Clawla
 
 ## Contributing
 
-PRs welcome. The codebase is ~7500 lines of Go across 15 packages, intentionally small and readable.
+PRs welcome. The codebase is ~7500 lines of Go across 15 packages, intentionally small and readable. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, test, style, and PR guidance.
 
 ```bash
-make test       # Run all tests
-make lint       # Run golangci-lint
-make build-all  # Build for all platforms
+go test ./...   # Run all tests
+go vet ./...    # Run static checks
+go build ./...  # Compile all packages
 ```
 
 ## Troubleshooting
