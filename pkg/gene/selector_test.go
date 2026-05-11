@@ -156,7 +156,7 @@ func TestSelectGenes_MaxResults(t *testing.T) {
 
 func TestSelectGenes_SortedByScore(t *testing.T) {
 	genes := []Gene{
-		makeTestGene("low", []string{"sensor_error"}, 0.7, 2, "repair"),
+		makeTestGene("low", []string{"sensor_error", "threshold_breach"}, 0.7, 2, "repair"),
 		makeTestGene("high", []string{"sensor_error"}, 0.95, 10, "repair"),
 	}
 

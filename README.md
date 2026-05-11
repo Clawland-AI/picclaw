@@ -85,6 +85,46 @@ pkg/
 skills/                        6 built-in skills (datacenter-monitoring, github, summarize, weather, tmux, skill-creator)
 ```
 
+```mermaid
+flowchart LR
+  subgraph Users["Users and external systems"]
+    Channels["Telegram / Discord / QQ / DingTalk / Feishu / WhatsApp / MaixCam"]
+    EdgeAPI["Fleet edge API"]
+    Cron["Cron scheduler"]
+  end
+
+  subgraph Runtime["PicoClaw runtime"]
+    ChannelMgr["Channel manager"]
+    Bus["Message bus"]
+    Agent["Agent loop"]
+    Sessions["Session manager"]
+    Context["Context builder"]
+    Tools["Tool registry"]
+    Skills["Skill loader and installer"]
+    Providers["LLM providers"]
+    Gene["Gene evolution engine"]
+  end
+
+  Channels -->|InboundMessage| ChannelMgr
+  ChannelMgr -->|PublishInbound| Bus
+  Cron -->|Scheduled prompts| Bus
+  EdgeAPI -->|Commands and status| Bus
+  Bus -->|ConsumeInbound| Agent
+
+  Agent --> Sessions
+  Agent --> Context
+  Context --> Skills
+  Agent --> Providers
+  Agent --> Tools
+  Tools -->|message and cron tools| Bus
+  Tools --> Gene
+
+  Agent -->|OutboundMessage| Bus
+  Bus -->|SubscribeOutbound| ChannelMgr
+  ChannelMgr -->|send replies| Channels
+  Gene -->|stats| EdgeAPI
+```
+
 ## Quick Start
 
 **1. Build**
