@@ -278,8 +278,12 @@ PicoClaw can act as an L1 edge node in a distributed architecture, reporting to 
 
 When enabled, PicoClaw exposes:
 - `GET /healthz` — Health check
-- `GET /api/v1/status` — Node status
-- `POST /api/v1/command` — Receive commands from fleet
+- `GET /api/health` — Health check alias for fleet probes
+- `GET /api/status` — Node status, including whether the message bus is connected
+- `POST /api/command` — Receive fleet commands and publish them to the internal message bus
+- `POST /api/message` — Receive inbound messages and publish them to the internal message bus
+
+The older `/api/v1/status` and `/api/v1/command` paths remain available for compatibility.
 
 `GET /healthz` returns node and runtime metadata for probes:
 
@@ -293,6 +297,41 @@ When enabled, PicoClaw exposes:
   "build_time": "unknown",
   "go_version": "go1.24.x",
   "uptime": "12.3s"
+}
+```
+
+`POST /api/command` accepts a fleet command:
+
+```bash
+curl -X POST http://localhost:9090/api/command \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"reboot","request_id":"cmd-123","payload":{"delay":"10s"}}'
+```
+
+The server validates the JSON, returns `202 Accepted`, and publishes an `edge-command`
+message to the internal bus so the agent loop can process it:
+
+```json
+{
+  "status": "accepted",
+  "command": "reboot",
+  "request_id": "cmd-123",
+  "session_key": "edge:dc-rack-a1:cmd-123"
+}
+```
+
+`POST /api/message` accepts the standard inbound message shape used by `pkg/bus`:
+
+```json
+{
+  "channel": "http",
+  "sender_id": "fleet-manager",
+  "chat_id": "dc-rack-a1",
+  "content": "collect temperature",
+  "session_key": "ops:night-shift",
+  "metadata": {
+    "priority": "high"
+  }
 }
 ```
 

@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
+
+	"github.com/sipeed/picoclaw/pkg/bus"
 )
 
 // Server is the Edge API HTTP server.
@@ -16,15 +19,22 @@ type Server struct {
 	config Config
 	mux    *http.ServeMux
 	start  time.Time
+	bus    *bus.MessageBus
 }
 
 // NewServer creates a new Edge API Server.
 func NewServer(cfg Config) *Server {
+	return NewServerWithBus(cfg, nil)
+}
+
+// NewServerWithBus creates a new Edge API Server wired to the message bus.
+func NewServerWithBus(cfg Config, msgBus *bus.MessageBus) *Server {
 	cfg = withDefaults(cfg)
 	s := &Server{
 		config: cfg,
 		mux:    http.NewServeMux(),
 		start:  time.Now(),
+		bus:    msgBus,
 	}
 	s.routes()
 	return s
@@ -58,8 +68,12 @@ func withDefaults(cfg Config) Config {
 
 func (s *Server) routes() {
 	s.mux.HandleFunc("GET /healthz", s.handleHealthz)
+	s.mux.HandleFunc("GET /api/health", s.handleHealthz)
+	s.mux.HandleFunc("GET /api/status", s.handleStatus)
 	s.mux.HandleFunc("GET /api/v1/status", s.handleStatus)
+	s.mux.HandleFunc("POST /api/command", s.handleCommand)
 	s.mux.HandleFunc("POST /api/v1/command", s.handleCommand)
+	s.mux.HandleFunc("POST /api/message", s.handleMessage)
 }
 
 // Start begins listening on the configured port.
@@ -91,27 +105,120 @@ func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
-		"node_id":   s.config.NodeID,
-		"node_name": s.config.NodeName,
-		"status":    "running",
-		"uptime":    time.Since(s.start).String(),
-		"cloud":     s.config.Cloud.Endpoint,
+		"node_id":       s.config.NodeID,
+		"node_name":     s.config.NodeName,
+		"status":        "running",
+		"uptime":        time.Since(s.start).String(),
+		"cloud":         s.config.Cloud.Endpoint,
+		"bus_connected": s.bus != nil,
 	})
 }
 
 func (s *Server) handleCommand(w http.ResponseWriter, r *http.Request) {
 	var cmd struct {
-		Type    string         `json:"type"`
-		Payload map[string]any `json:"payload"`
+		Type       string            `json:"type"`
+		Payload    map[string]any    `json:"payload"`
+		RequestID  string            `json:"request_id"`
+		SessionKey string            `json:"session_key"`
+		Metadata   map[string]string `json:"metadata"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&cmd); err != nil {
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
+	cmd.Type = strings.TrimSpace(cmd.Type)
+	if cmd.Type == "" {
+		http.Error(w, "command type is required", http.StatusBadRequest)
+		return
+	}
+	if s.bus == nil {
+		http.Error(w, "message bus not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if cmd.RequestID == "" {
+		cmd.RequestID = fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	if cmd.SessionKey == "" {
+		cmd.SessionKey = fmt.Sprintf("edge:%s:%s", s.config.NodeID, cmd.RequestID)
+	}
+	metadata := cloneMetadata(cmd.Metadata)
+	metadata["command_type"] = cmd.Type
+	metadata["request_id"] = cmd.RequestID
+	if cmd.Payload != nil {
+		payload, err := json.Marshal(cmd.Payload)
+		if err != nil {
+			http.Error(w, "invalid command payload", http.StatusBadRequest)
+			return
+		}
+		metadata["payload"] = string(payload)
+	}
+
+	s.bus.PublishInbound(bus.InboundMessage{
+		Channel:    "edge-command",
+		SenderID:   "fleet-manager",
+		ChatID:     s.config.NodeID,
+		Content:    cmd.Type,
+		SessionKey: cmd.SessionKey,
+		Metadata:   metadata,
+	})
+
 	log.Printf("[edge] received command: type=%s", cmd.Type)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]any{
-		"status":  "accepted",
-		"command": cmd.Type,
+		"status":      "accepted",
+		"command":     cmd.Type,
+		"request_id":  cmd.RequestID,
+		"session_key": cmd.SessionKey,
 	})
+}
+
+func (s *Server) handleMessage(w http.ResponseWriter, r *http.Request) {
+	var msg bus.InboundMessage
+	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+	msg.Content = strings.TrimSpace(msg.Content)
+	if msg.Content == "" {
+		http.Error(w, "content is required", http.StatusBadRequest)
+		return
+	}
+	if s.bus == nil {
+		http.Error(w, "message bus not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if msg.Channel == "" {
+		msg.Channel = "http"
+	}
+	if msg.SenderID == "" {
+		msg.SenderID = "edge-api"
+	}
+	if msg.ChatID == "" {
+		msg.ChatID = s.config.NodeID
+	}
+	if msg.SessionKey == "" {
+		msg.SessionKey = fmt.Sprintf("edge:%s", s.config.NodeID)
+	}
+	if msg.Metadata == nil {
+		msg.Metadata = map[string]string{}
+	}
+
+	s.bus.PublishInbound(msg)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]any{
+		"status":      "accepted",
+		"channel":     msg.Channel,
+		"session_key": msg.SessionKey,
+	})
+}
+
+func cloneMetadata(metadata map[string]string) map[string]string {
+	cloned := make(map[string]string, len(metadata)+3)
+	for key, value := range metadata {
+		cloned[key] = value
+	}
+	return cloned
 }
