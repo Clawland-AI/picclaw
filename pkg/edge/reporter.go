@@ -19,17 +19,26 @@ type GeneStatsProvider interface {
 // Reporter periodically sends heartbeat and event reports
 // to the upstream Fleet Manager (L2 NanoClaw or L3 MoltClaw).
 type Reporter struct {
-	config        Config
-	client        *http.Client
-	stopCh        chan struct{}
-	geneProvider  GeneStatsProvider
+	config       Config
+	client       *http.Client
+	stopCh       chan struct{}
+	geneProvider GeneStatsProvider
 }
 
 // NewReporter creates a new Edge Reporter.
 func NewReporter(cfg Config) *Reporter {
+	return NewReporterWithClient(cfg, &http.Client{Timeout: 10 * time.Second})
+}
+
+// NewReporterWithClient creates a Reporter with an injected HTTP client.
+// Tests use this to point the reporter at an httptest.Server.
+func NewReporterWithClient(cfg Config, client *http.Client) *Reporter {
+	if client == nil {
+		client = &http.Client{Timeout: 10 * time.Second}
+	}
 	return &Reporter{
 		config: cfg,
-		client: &http.Client{Timeout: 10 * time.Second},
+		client: client,
 		stopCh: make(chan struct{}),
 	}
 }
@@ -87,6 +96,18 @@ func (r *Reporter) ReportEvent(eventType string, data map[string]any) error {
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 	return r.post("/fleet/events", payload)
+}
+
+// ReportStatus sends the current node status and optional metrics immediately.
+func (r *Reporter) ReportStatus(status string, metrics map[string]any) error {
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"node_name": r.config.NodeName,
+		"status":    status,
+		"metrics":   metrics,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	return r.post("/fleet/status", payload)
 }
 
 func (r *Reporter) sendRegistration() {

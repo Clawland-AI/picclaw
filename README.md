@@ -335,7 +335,18 @@ message to the internal bus so the agent loop can process it:
 }
 ```
 
-And periodically sends heartbeats (including gene stats) to the configured fleet manager.
+The edge reporter periodically sends heartbeats (including gene stats) to the
+configured fleet manager and can also push immediate status or event reports:
+
+| Method | Upstream path | Purpose |
+|--------|---------------|---------|
+| `POST` | `/fleet/register` | Initial node registration when the reporter starts |
+| `POST` | `/fleet/heartbeat` | Periodic liveness and gene statistics |
+| `POST` | `/fleet/status` | On-demand node status and metrics |
+| `POST` | `/fleet/events` | Event-driven alerts or sensor incidents |
+
+If `cloud_token` is set, reporter requests include an `Authorization: Bearer ...`
+header.
 
 ## Skills (6 built-in)
 
