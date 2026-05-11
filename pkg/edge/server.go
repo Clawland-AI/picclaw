@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 )
 
@@ -19,6 +20,7 @@ type Server struct {
 
 // NewServer creates a new Edge API Server.
 func NewServer(cfg Config) *Server {
+	cfg = withDefaults(cfg)
 	s := &Server{
 		config: cfg,
 		mux:    http.NewServeMux(),
@@ -26,6 +28,32 @@ func NewServer(cfg Config) *Server {
 	}
 	s.routes()
 	return s
+}
+
+func withDefaults(cfg Config) Config {
+	defaults := DefaultConfig()
+	if cfg.Port == 0 {
+		cfg.Port = defaults.Port
+	}
+	if cfg.NodeName == "" {
+		cfg.NodeName = defaults.NodeName
+	}
+	if cfg.Version == "" {
+		cfg.Version = defaults.Version
+	}
+	if cfg.BuildTime == "" {
+		cfg.BuildTime = defaults.BuildTime
+	}
+	if cfg.AgentName == "" {
+		cfg.AgentName = defaults.AgentName
+	}
+	if cfg.Cloud.Endpoint == "" {
+		cfg.Cloud.Endpoint = defaults.Cloud.Endpoint
+	}
+	if cfg.Cloud.HeartbeatInterval == 0 {
+		cfg.Cloud.HeartbeatInterval = defaults.Cloud.HeartbeatInterval
+	}
+	return cfg
 }
 
 func (s *Server) routes() {
@@ -41,13 +69,22 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(addr, s.mux)
 }
 
+// ServeHTTP routes Edge API requests.
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mux.ServeHTTP(w, r)
+}
+
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
-		"status":  "ok",
-		"agent":   "picclaw",
-		"node_id": s.config.NodeID,
-		"uptime":  time.Since(s.start).String(),
+		"status":     "ok",
+		"agent_name": s.config.AgentName,
+		"node_id":    s.config.NodeID,
+		"node_name":  s.config.NodeName,
+		"version":    s.config.Version,
+		"build_time": s.config.BuildTime,
+		"go_version": runtime.Version(),
+		"uptime":     time.Since(s.start).String(),
 	})
 }
 

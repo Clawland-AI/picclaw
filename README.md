@@ -281,6 +281,21 @@ When enabled, PicoClaw exposes:
 - `GET /api/v1/status` — Node status
 - `POST /api/v1/command` — Receive commands from fleet
 
+`GET /healthz` returns node and runtime metadata for probes:
+
+```json
+{
+  "status": "ok",
+  "agent_name": "picclaw",
+  "node_id": "dc-rack-a1",
+  "node_name": "Datacenter Rack A1",
+  "version": "0.1.0",
+  "build_time": "unknown",
+  "go_version": "go1.24.x",
+  "uptime": "12.3s"
+}
+```
+
 And periodically sends heartbeats (including gene stats) to the configured fleet manager.
 
 ## Skills (6 built-in)

@@ -83,7 +83,13 @@ func SelectGenes(genes []Gene, signals []string, preset StrategyPreset, maxResul
 
 	// Sort by score descending
 	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].Score > candidates[j].Score
+		if candidates[i].Score != candidates[j].Score {
+			return candidates[i].Score > candidates[j].Score
+		}
+		if candidates[i].Gene.Confidence != candidates[j].Gene.Confidence {
+			return candidates[i].Gene.Confidence > candidates[j].Gene.Confidence
+		}
+		return candidates[i].Gene.VerifiedBy > candidates[j].Gene.VerifiedBy
 	})
 
 	if maxResults > 0 && len(candidates) > maxResults {
