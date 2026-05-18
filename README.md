@@ -82,7 +82,7 @@ pkg/
                                          exec, spawn, web_search, web_fetch, message, cron, report_gene
   utils/                       String utilities
   voice/                       Groq Whisper voice transcription
-skills/                        6 built-in skills (datacenter-monitoring, github, summarize, weather, tmux, skill-creator)
+skills/                        7 built-in skills (aquaculture-monitoring, datacenter-monitoring, github, summarize, weather, tmux, skill-creator)
 ```
 
 ## Quick Start
@@ -289,6 +289,7 @@ Skills are markdown files that teach the agent domain-specific knowledge.
 
 | Skill | Description |
 |-------|-------------|
+| `aquaculture-monitoring` | Pond DO/pH/temperature monitoring with aerator control and daily reports |
 | `datacenter-monitoring` | Rack temperature monitoring with mock sensors and Gene Evolution demo |
 | `github` | GitHub workflow assistance |
 | `summarize` | Text summarization |
@@ -321,6 +322,24 @@ python3 skills/datacenter-monitoring/scripts/mock-sensor.py --all --chaos --summ
 ```
 
 See [skills/datacenter-monitoring/DEPLOY.md](skills/datacenter-monitoring/DEPLOY.md) for full deployment guide with real hardware.
+
+## Aquaculture Monitoring Demo
+
+The `aquaculture-monitoring` skill includes pond sensor simulation, aerator control examples, and daily reporting:
+
+```bash
+# Test all ponds
+python3 skills/aquaculture-monitoring/scripts/mock-pond.py --all --summary
+
+# Simulate dissolved oxygen emergency
+python3 skills/aquaculture-monitoring/scripts/mock-pond.py --pond pond-01 --low-do
+
+# Mock aerator relay control
+python3 skills/aquaculture-monitoring/scripts/mock-pond.py --aerator on --pond pond-01
+
+# Generate a daily pond report
+python3 skills/aquaculture-monitoring/scripts/mock-pond.py --daily-report
+```
 
 ## CLI Reference
 
