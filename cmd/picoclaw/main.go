@@ -585,6 +585,7 @@ func gatewayCmd() {
 			Cloud: edge.CloudConfig{
 				Endpoint:          cfg.Edge.CloudEndpoint,
 				HeartbeatInterval: time.Duration(cfg.Edge.HeartbeatSeconds) * time.Second,
+				StatusInterval:    time.Duration(cfg.Edge.StatusSeconds) * time.Second,
 				Token:             cfg.Edge.CloudToken,
 			},
 		}

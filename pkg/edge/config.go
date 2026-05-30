@@ -31,6 +31,9 @@ type CloudConfig struct {
 	// HeartbeatInterval is the interval between heartbeat reports.
 	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
 
+	// StatusInterval is the interval between full status reports.
+	StatusInterval time.Duration `json:"status_interval"`
+
 	// Token is the authentication token for the Fleet Manager.
 	Token string `json:"token,omitempty"`
 }
@@ -45,6 +48,7 @@ func DefaultConfig() Config {
 		Cloud: CloudConfig{
 			Endpoint:          "http://localhost:8080",
 			HeartbeatInterval: 30 * time.Second,
+			StatusInterval:    60 * time.Second,
 		},
 	}
 }
