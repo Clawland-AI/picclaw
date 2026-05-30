@@ -277,9 +277,10 @@ PicoClaw can act as an L1 edge node in a distributed architecture, reporting to 
 ```
 
 When enabled, PicoClaw exposes:
-- `GET /healthz` — Health check
-- `GET /api/v1/status` — Node status
-- `POST /api/v1/command` — Receive commands from fleet
+- `GET /api/health` — Health check (`/healthz` remains available)
+- `GET /api/status` — Node status (`/api/v1/status` remains available)
+- `POST /api/command` — Receive commands from fleet and queue them on MessageBus
+- `POST /api/message` — Receive user/operator messages and queue them on MessageBus
 
 And periodically sends heartbeats (including gene stats) to the configured fleet manager.
 

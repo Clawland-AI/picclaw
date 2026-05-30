@@ -588,7 +588,7 @@ func gatewayCmd() {
 				Token:             cfg.Edge.CloudToken,
 			},
 		}
-		edgeServer = edge.NewServer(edgeCfg)
+		edgeServer = edge.NewServer(edgeCfg, msgBus)
 		edgeReporter = edge.NewReporter(edgeCfg)
 
 		// Wire gene engine into edge reporter for heartbeat stats
@@ -991,7 +991,7 @@ func cronHelp() {
 
 func cronListCmd(storePath string) {
 	cs := cron.NewCronService(storePath, nil)
-	jobs := cs.ListJobs(true)  // Show all jobs, including disabled
+	jobs := cs.ListJobs(true) // Show all jobs, including disabled
 
 	if len(jobs) == 0 {
 		fmt.Println("No scheduled jobs.")
