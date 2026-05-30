@@ -22,13 +22,14 @@ type Config struct {
 
 // EdgeConfig holds edge API server and fleet reporter settings.
 type EdgeConfig struct {
-	Enabled           bool   `json:"enabled" env:"PICOCLAW_EDGE_ENABLED"`
-	Port              int    `json:"port" env:"PICOCLAW_EDGE_PORT"`
-	NodeID            string `json:"node_id" env:"PICOCLAW_EDGE_NODE_ID"`
-	NodeName          string `json:"node_name" env:"PICOCLAW_EDGE_NODE_NAME"`
-	CloudEndpoint     string `json:"cloud_endpoint" env:"PICOCLAW_EDGE_CLOUD_ENDPOINT"`
-	CloudToken        string `json:"cloud_token" env:"PICOCLAW_EDGE_CLOUD_TOKEN"`
-	HeartbeatSeconds  int    `json:"heartbeat_seconds" env:"PICOCLAW_EDGE_HEARTBEAT_SECONDS"`
+	Enabled          bool   `json:"enabled" env:"PICOCLAW_EDGE_ENABLED"`
+	Port             int    `json:"port" env:"PICOCLAW_EDGE_PORT"`
+	NodeID           string `json:"node_id" env:"PICOCLAW_EDGE_NODE_ID"`
+	NodeName         string `json:"node_name" env:"PICOCLAW_EDGE_NODE_NAME"`
+	CloudEndpoint    string `json:"cloud_endpoint" env:"PICOCLAW_EDGE_CLOUD_ENDPOINT"`
+	CloudToken       string `json:"cloud_token" env:"PICOCLAW_EDGE_CLOUD_TOKEN"`
+	HeartbeatSeconds int    `json:"heartbeat_seconds" env:"PICOCLAW_EDGE_HEARTBEAT_SECONDS"`
+	StatusSeconds    int    `json:"status_seconds" env:"PICOCLAW_EDGE_STATUS_SECONDS"`
 }
 
 // GeneAppConfig holds Gene Evolution engine settings exposed to the user.
@@ -225,6 +226,7 @@ func DefaultConfig() *Config {
 			CloudEndpoint:    "http://localhost:8080",
 			CloudToken:       "",
 			HeartbeatSeconds: 30,
+			StatusSeconds:    60,
 		},
 		Gene: GeneAppConfig{
 			Strategy:      "balanced",
