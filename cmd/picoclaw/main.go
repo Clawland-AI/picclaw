@@ -588,7 +588,7 @@ func gatewayCmd() {
 				Token:             cfg.Edge.CloudToken,
 			},
 		}
-		edgeServer = edge.NewServer(edgeCfg)
+		edgeServer = edge.NewServer(edgeCfg, msgBus)
 		edgeReporter = edge.NewReporter(edgeCfg)
 
 		// Wire gene engine into edge reporter for heartbeat stats

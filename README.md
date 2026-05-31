@@ -276,7 +276,13 @@ PicoClaw can act as an L1 edge node in a distributed architecture, reporting to 
 }
 ```
 
-When enabled, PicoClaw exposes:
+When enabled, PicoClaw exposes these Edge API endpoints:
+- `GET /api/health` and `GET /healthz` - health checks
+- `GET /api/status` and `GET /api/v1/status` - node status
+- `POST /api/command` and `POST /api/v1/command` - receive Fleet Manager commands and publish them to the internal MessageBus
+- `POST /api/message` - receive operator/cloud messages and publish them to the internal MessageBus
+
+Legacy endpoint summary:
 - `GET /healthz` — Health check
 - `GET /api/v1/status` — Node status
 - `POST /api/v1/command` — Receive commands from fleet
