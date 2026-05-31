@@ -281,7 +281,14 @@ When enabled, PicoClaw exposes:
 - `GET /api/v1/status` — Node status
 - `POST /api/v1/command` — Receive commands from fleet
 
-And periodically sends heartbeats (including gene stats) to the configured fleet manager.
+And periodically reports to the configured fleet manager:
+- `POST /fleet/register` - node id, name, capabilities, version, and timestamp
+- `POST /fleet/heartbeat` - online status plus gene stats when the Gene Evolution engine is enabled
+- `POST /fleet/status` - structured status snapshots for operational state
+- `POST /fleet/events` - one-off edge events
+- `POST /fleet/genes/publish` - high-confidence gene sharing
+
+If `cloud_token` is set, reporter requests include `Authorization: Bearer <token>`.
 
 ## Skills (6 built-in)
 
