@@ -281,7 +281,11 @@ When enabled, PicoClaw exposes:
 - `GET /api/v1/status` — Node status
 - `POST /api/v1/command` — Receive commands from fleet
 
-And periodically sends heartbeats (including gene stats) to the configured fleet manager.
+The edge reporter sends:
+- registration payloads to `/fleet/register` on startup
+- heartbeats to `/fleet/heartbeat` on the configured interval, including gene stats when available
+- status snapshots to `/fleet/status`
+- event reports to `/fleet/events` via `ReportEvent`
 
 ## Skills (6 built-in)
 

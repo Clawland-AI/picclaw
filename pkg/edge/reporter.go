@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,14 +21,19 @@ type GeneStatsProvider interface {
 // Reporter periodically sends heartbeat and event reports
 // to the upstream Fleet Manager (L2 NanoClaw or L3 MoltClaw).
 type Reporter struct {
-	config        Config
-	client        *http.Client
-	stopCh        chan struct{}
-	geneProvider  GeneStatsProvider
+	config       Config
+	client       *http.Client
+	stopCh       chan struct{}
+	stopOnce     sync.Once
+	geneProvider GeneStatsProvider
 }
 
 // NewReporter creates a new Edge Reporter.
 func NewReporter(cfg Config) *Reporter {
+	if cfg.Cloud.HeartbeatInterval <= 0 {
+		cfg.Cloud.HeartbeatInterval = DefaultConfig().Cloud.HeartbeatInterval
+	}
+
 	return &Reporter{
 		config: cfg,
 		client: &http.Client{Timeout: 10 * time.Second},
@@ -44,11 +51,14 @@ func (r *Reporter) StartHeartbeat() {
 
 	// Send initial registration
 	r.sendRegistration()
+	r.sendHeartbeat()
+	r.sendStatus("online", nil)
 
 	for {
 		select {
 		case <-ticker.C:
 			r.sendHeartbeat()
+			r.sendStatus("online", nil)
 		case <-r.stopCh:
 			log.Println("[edge] heartbeat reporter stopped")
 			return
@@ -58,7 +68,9 @@ func (r *Reporter) StartHeartbeat() {
 
 // Stop halts the heartbeat reporter.
 func (r *Reporter) Stop() {
-	close(r.stopCh)
+	r.stopOnce.Do(func() {
+		close(r.stopCh)
+	})
 }
 
 // SetGeneProvider attaches a gene stats provider to include
@@ -80,6 +92,10 @@ func (r *Reporter) PublishGene(geneData map[string]interface{}) error {
 
 // ReportEvent sends a one-off event to the Fleet Manager.
 func (r *Reporter) ReportEvent(eventType string, data map[string]any) error {
+	if data == nil {
+		data = map[string]any{}
+	}
+
 	payload := map[string]any{
 		"node_id":   r.config.NodeID,
 		"type":      eventType,
@@ -87,6 +103,18 @@ func (r *Reporter) ReportEvent(eventType string, data map[string]any) error {
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 	return r.post("/fleet/events", payload)
+}
+
+// ReportStatus sends the current node status to the Fleet Manager.
+func (r *Reporter) ReportStatus(status string, data map[string]any) error {
+	if status == "" {
+		status = "online"
+	}
+	if data == nil {
+		data = map[string]any{}
+	}
+
+	return r.sendStatus(status, data)
 }
 
 func (r *Reporter) sendRegistration() {
@@ -121,13 +149,28 @@ func (r *Reporter) sendHeartbeat() {
 	}
 }
 
+func (r *Reporter) sendStatus(status string, data map[string]any) error {
+	if data == nil {
+		data = map[string]any{}
+	}
+
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"status":    status,
+		"data":      data,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+
+	return r.post("/fleet/status", payload)
+}
+
 func (r *Reporter) post(path string, payload any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)
 	}
 
-	url := r.config.Cloud.Endpoint + path
+	url := strings.TrimRight(r.config.Cloud.Endpoint, "/") + path
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("request: %w", err)
