@@ -991,7 +991,7 @@ func cronHelp() {
 
 func cronListCmd(storePath string) {
 	cs := cron.NewCronService(storePath, nil)
-	jobs := cs.ListJobs(true)  // Show all jobs, including disabled
+	jobs := cs.ListJobs(true) // Show all jobs, including disabled
 
 	if len(jobs) == 0 {
 		fmt.Println("No scheduled jobs.")
