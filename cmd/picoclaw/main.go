@@ -34,8 +34,10 @@ import (
 	"github.com/sipeed/picoclaw/pkg/voice"
 )
 
-const version = "0.1.0"
 const logo = "🦞"
+
+var version = "0.1.0"
+var buildTime = "dev"
 
 func copyDirectory(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
@@ -578,10 +580,13 @@ func gatewayCmd() {
 	var edgeReporter *edge.Reporter
 	if cfg.Edge.Enabled {
 		edgeCfg := edge.Config{
-			Enabled:  true,
-			Port:     cfg.Edge.Port,
-			NodeID:   cfg.Edge.NodeID,
-			NodeName: cfg.Edge.NodeName,
+			Enabled:   true,
+			Port:      cfg.Edge.Port,
+			NodeID:    cfg.Edge.NodeID,
+			NodeName:  cfg.Edge.NodeName,
+			AgentName: "picclaw",
+			Version:   version,
+			BuildTime: buildTime,
 			Cloud: edge.CloudConfig{
 				Endpoint:          cfg.Edge.CloudEndpoint,
 				HeartbeatInterval: time.Duration(cfg.Edge.HeartbeatSeconds) * time.Second,

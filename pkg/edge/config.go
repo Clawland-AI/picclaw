@@ -19,6 +19,15 @@ type Config struct {
 	// NodeName is the human-readable name for this edge node.
 	NodeName string `json:"node_name"`
 
+	// AgentName is the name of the agent exposed in health responses.
+	AgentName string `json:"agent_name"`
+
+	// Version is the binary version exposed in health responses.
+	Version string `json:"version"`
+
+	// BuildTime is the build timestamp exposed in health responses.
+	BuildTime string `json:"build_time"`
+
 	// Cloud holds the upstream (L2/L3) connection settings.
 	Cloud CloudConfig `json:"cloud"`
 }
@@ -42,6 +51,9 @@ func DefaultConfig() Config {
 		Port:     9090,
 		NodeID:   "",
 		NodeName: "picclaw-edge",
+		AgentName: "picclaw",
+		Version:   "0.1.0",
+		BuildTime: "dev",
 		Cloud: CloudConfig{
 			Endpoint:          "http://localhost:8080",
 			HeartbeatInterval: 30 * time.Second,

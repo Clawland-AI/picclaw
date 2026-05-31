@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 )
 
@@ -42,12 +43,29 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
+	agentName := s.config.AgentName
+	if agentName == "" {
+		agentName = "picclaw"
+	}
+	version := s.config.Version
+	if version == "" {
+		version = "0.1.0"
+	}
+	buildTime := s.config.BuildTime
+	if buildTime == "" {
+		buildTime = "dev"
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
-		"status":  "ok",
-		"agent":   "picclaw",
-		"node_id": s.config.NodeID,
-		"uptime":  time.Since(s.start).String(),
+		"status":     "ok",
+		"agent":      agentName,
+		"agent_name": agentName,
+		"node_id":    s.config.NodeID,
+		"uptime":     time.Since(s.start).String(),
+		"version":    version,
+		"build_time": buildTime,
+		"go_version": runtime.Version(),
 	})
 }
 
