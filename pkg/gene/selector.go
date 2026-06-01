@@ -81,9 +81,20 @@ func SelectGenes(genes []Gene, signals []string, preset StrategyPreset, maxResul
 		}
 	}
 
-	// Sort by score descending
+	// Sort by score descending. When scores are capped/tied, keep the
+	// ordering deterministic by preferring stronger confidence and
+	// verification signals before falling back to ID.
 	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].Score > candidates[j].Score
+		if candidates[i].Score != candidates[j].Score {
+			return candidates[i].Score > candidates[j].Score
+		}
+		if candidates[i].Gene.Confidence != candidates[j].Gene.Confidence {
+			return candidates[i].Gene.Confidence > candidates[j].Gene.Confidence
+		}
+		if candidates[i].Gene.VerifiedBy != candidates[j].Gene.VerifiedBy {
+			return candidates[i].Gene.VerifiedBy > candidates[j].Gene.VerifiedBy
+		}
+		return candidates[i].Gene.ID < candidates[j].Gene.ID
 	})
 
 	if maxResults > 0 && len(candidates) > maxResults {
