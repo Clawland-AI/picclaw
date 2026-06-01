@@ -13,6 +13,8 @@
 <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
 </p>
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 </div>
 
 ---
