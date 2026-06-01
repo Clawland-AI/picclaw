@@ -271,7 +271,8 @@ PicoClaw can act as an L1 edge node in a distributed architecture, reporting to 
     "node_name": "Datacenter Rack A1",
     "cloud_endpoint": "http://nanoclaw:8080",
     "cloud_token": "...",
-    "heartbeat_seconds": 30
+    "heartbeat_seconds": 30,
+    "status_seconds": 60
   }
 }
 ```
@@ -281,7 +282,12 @@ When enabled, PicoClaw exposes:
 - `GET /api/v1/status` — Node status
 - `POST /api/v1/command` — Receive commands from fleet
 
-And periodically sends heartbeats (including gene stats) to the configured fleet manager.
+And reports to the configured fleet manager:
+- `POST /fleet/register` — Register the PicClaw node when the reporter starts
+- `POST /fleet/heartbeat` — Send liveness, uptime, and gene stats on `heartbeat_seconds`
+- `POST /fleet/status` — Send full node status and high-confidence genes on `status_seconds`
+- `POST /fleet/events` — Send synchronous or queued event reports
+- `POST /fleet/genes/publish` — Publish high-confidence genes for cross-node sharing
 
 ## Skills (6 built-in)
 

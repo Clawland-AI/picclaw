@@ -585,6 +585,7 @@ func gatewayCmd() {
 			Cloud: edge.CloudConfig{
 				Endpoint:          cfg.Edge.CloudEndpoint,
 				HeartbeatInterval: time.Duration(cfg.Edge.HeartbeatSeconds) * time.Second,
+				StatusInterval:    time.Duration(cfg.Edge.StatusSeconds) * time.Second,
 				Token:             cfg.Edge.CloudToken,
 			},
 		}
@@ -991,7 +992,7 @@ func cronHelp() {
 
 func cronListCmd(storePath string) {
 	cs := cron.NewCronService(storePath, nil)
-	jobs := cs.ListJobs(true)  // Show all jobs, including disabled
+	jobs := cs.ListJobs(true) // Show all jobs, including disabled
 
 	if len(jobs) == 0 {
 		fmt.Println("No scheduled jobs.")

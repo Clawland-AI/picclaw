@@ -100,7 +100,8 @@
     "node_name": "picclaw-edge",
     "cloud_endpoint": "http://localhost:8080",
     "cloud_token": "",
-    "heartbeat_seconds": 30
+    "heartbeat_seconds": 30,
+    "status_seconds": 60
   },
   "gene": {
     "strategy": "balanced",
