@@ -21,6 +21,26 @@ type Config struct {
 
 	// Cloud holds the upstream (L2/L3) connection settings.
 	Cloud CloudConfig `json:"cloud"`
+
+	// StatusInterval is how often status snapshots are sent to the Fleet Manager.
+	// Defaults to 5 minutes if zero.
+	StatusInterval time.Duration `json:"status_interval"`
+
+	// MaxRetries is the maximum number of delivery retries for failed HTTP calls.
+	// Defaults to 3 if zero.
+	MaxRetries int `json:"max_retries"`
+
+	// RetryBaseDelay is the initial backoff duration for retries.
+	// Each retry doubles this with jitter. Defaults to 1s if zero.
+	RetryBaseDelay time.Duration `json:"retry_base_delay"`
+
+	// EventQueueSize is the capacity of the buffered event queue for async reporting.
+	// Defaults to 256 if zero.
+	EventQueueSize int `json:"event_queue_size"`
+
+	// EventWorkers is the number of goroutines draining the async event queue.
+	// Defaults to 1 if zero.
+	EventWorkers int `json:"event_workers"`
 }
 
 // CloudConfig holds the upstream cloud/gateway connection settings.
@@ -46,5 +66,10 @@ func DefaultConfig() Config {
 			Endpoint:          "http://localhost:8080",
 			HeartbeatInterval: 30 * time.Second,
 		},
+		StatusInterval:  5 * time.Minute,
+		MaxRetries:      3,
+		RetryBaseDelay:  1 * time.Second,
+		EventQueueSize:  256,
+		EventWorkers:    1,
 	}
 }
