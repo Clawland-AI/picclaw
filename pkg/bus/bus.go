@@ -12,6 +12,16 @@ type MessageBus struct {
 	mu       sync.RWMutex
 }
 
+type InboundMessage struct {
+	Type    string         `json:"type"`
+	Payload map[string]any `json:"payload"`
+}
+
+type OutboundMessage struct {
+	Type    string         `json:"type"`
+	Payload map[string]any `json:"payload"`
+}
+
 func NewMessageBus() *MessageBus {
 	return &MessageBus{
 		inbound:  make(chan InboundMessage, 100),
