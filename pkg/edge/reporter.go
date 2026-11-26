@@ -89,6 +89,39 @@ func (r *Reporter) ReportEvent(eventType string, data map[string]any) error {
 	return r.post("/fleet/events", payload)
 }
 
+// ReportStatus sends node status reporting to the Fleet Manager.
+func (r *Reporter) ReportStatus(status string, details map[string]any) error {
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"status":    status,
+		"details":   details,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	return r.post("/fleet/status", payload)
+}
+
+// ReportAuthorization reports authorization status to the Fleet Manager.
+func (r *Reporter) ReportAuthorization(authorized bool, reason string) error {
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"authorized": authorized,
+		"reason":    reason,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	return r.post("/fleet/authorize", payload)
+}
+
+// ReportFailure reports a failure event to the Fleet Manager.
+func (r *Reporter) ReportFailure(component string, err error) error {
+	payload := map[string]any{
+		"node_id":   r.config.NodeID,
+		"component": component,
+		"error":     err.Error(),
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	return r.post("/fleet/failure", payload)
+}
+
 func (r *Reporter) sendRegistration() {
 	payload := map[string]any{
 		"node_id":      r.config.NodeID,
